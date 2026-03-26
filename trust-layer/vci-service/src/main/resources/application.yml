@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: vci-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/trust_layer
+    username: tl_user
+    password: tl_password
+
+server:
+  port: 9004
+
+logging:
+  level:
+    root: INFO
+    et.trustlayer: DEBUG

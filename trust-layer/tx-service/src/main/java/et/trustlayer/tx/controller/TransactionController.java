@@ -1,0 +1,69 @@
+package et.trustlayer.tx.controller;
+
+import et.trustlayer.tx.dto.SignedTransactionRequest;
+import et.trustlayer.tx.service.TransactionService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+@RestController
+@RequestMapping("/api/tx")
+@RequiredArgsConstructor
+@Slf4j
+public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    @PostMapping("/submit")
+    public ResponseEntity<Map<String, Object>> submitTransaction(
+            @RequestHeader(value = "X-Tenant-ID", required = false) String tenantId,
+            @RequestHeader(value = "Authorization", required = false) String bearerToken,
+            @RequestHeader(value = "DPoP", required = false) String dpopProof,
+            @RequestBody SignedTransactionRequest request) {
+
+        try {
+            log.info("Received signed transaction for processing");
+            Map<String, Object> result = transactionService.verifyAndSubmitTransaction(request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Transaction Submit Failed", e);
+            Map<String, Object> err = new HashMap<>();
+            err.put("status", "REJECTED");
+            err.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @PostMapping("/initiate")
+    public ResponseEntity<Map<String, Object>> initiateTransaction(
+            @RequestHeader(value = "X-Tenant-ID", required = false) String tenantId,
+            @RequestBody et.trustlayer.tx.dto.InitiateTransactionRequest request) {
+        try {
+            log.info("Initiating transaction for user {}", request.getUserId());
+            Map<String, Object> result = transactionService.initiateTransaction(request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Failed to initiate transaction", e);
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<List<et.trustlayer.tx.dto.TransactionRecordResponse>> getTransactionHistory(
+            @PathVariable String userId) {
+        try {
+            List<et.trustlayer.tx.dto.TransactionRecordResponse> history = transactionService.getTransactionHistory(userId);
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            log.error("Failed to get transaction history", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+}

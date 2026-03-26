@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Production: certificate pinning for the Trust Layer Hub -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">hub.trustlayer.et</domain>
+        <pin-set expiration="2027-01-01">
+            <!-- Pin the leaf certificate SHA-256 hash (replace with actual) -->
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+            <!-- Backup pin -->
+            <pin digest="SHA-256">CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=</pin>
+        </pin-set>
+    </domain-config>
+    <!-- Dev: allow cleartext to localhost for local testing -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>
