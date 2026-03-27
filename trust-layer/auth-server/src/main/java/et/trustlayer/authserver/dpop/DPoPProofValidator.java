@@ -1,13 +1,17 @@
 package et.trustlayer.authserver.dpop;
 
 import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64URL;
 import et.trustlayer.authserver.session.NonceCacheService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.text.ParseException;
 import java.util.Map;
 import java.security.MessageDigest;
 
@@ -38,8 +42,14 @@ public class DPoPProofValidator {
                 return DPoPValidationResult.invalid("Missing or invalid public JWK");
             }
 
-            // 3. Signature Validation (Mocked here for brevity, requires Signature validation via JWK)
-            // if (!verifySignature(jwsObject, jwk)) return invalid();
+            // 3. Signature Validation
+            JWSVerifier verifier = createVerifier(jwk);
+            if (verifier == null) {
+                return DPoPValidationResult.invalid("Unsupported JWK key type for DPoP proof");
+            }
+            if (!jwsObject.verify(verifier)) {
+                return DPoPValidationResult.invalid("DPoP proof signature verification failed");
+            }
 
             // 4. Validate htm (HTTP Method)
             String proofHtm = (String) payload.get("htm");
@@ -72,6 +82,15 @@ public class DPoPProofValidator {
         } catch (Exception e) {
             return DPoPValidationResult.invalid("Malformed DPoP proof: " + e.getMessage());
         }
+    }
+
+    private JWSVerifier createVerifier(JWK jwk) throws Exception {
+        if (jwk instanceof ECKey ecKey) {
+            return new ECDSAVerifier(ecKey);
+        } else if (jwk instanceof RSAKey rsaKey) {
+            return new RSASSAVerifier(rsaKey);
+        }
+        return null;
     }
 
     private String computeSha256Str(String input) throws Exception {

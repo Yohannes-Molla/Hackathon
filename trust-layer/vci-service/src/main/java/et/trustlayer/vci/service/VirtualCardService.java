@@ -43,6 +43,7 @@ public class VirtualCardService {
     private final MerchantRepository merchantRepository;
     private final TenantRepository tenantRepository;
     private final RestTemplate restTemplate;
+    private final AuditService auditService;
 
     @Value("${trustlayer.vault.base-url:http://localhost:8200}")
     private String vaultBaseUrl;
@@ -91,6 +92,11 @@ public class VirtualCardService {
 
         card = virtualCardRepository.save(card);
         log.info("Successfully provisioned Virtual Card ID: {}", card.getId());
+
+        auditService.log(user.getTenant(), request.getUserId(), "CARD_PROVISIONED",
+                "VirtualCard", card.getId().toString(),
+                "{\"lastFour\":\"" + lastFour + "\",\"cardNetwork\":\"VISA\""
+                        + ",\"boundKeyId\":\"" + request.getKeyId() + "\"}");
 
         // Upgrade user status since they have a working card now
         if (!"LIVE".equals(user.getOnboardingState())) {

@@ -4,9 +4,13 @@ WORKDIR /workspace
 COPY gradle gradle
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY common common
+COPY auth-server auth-server
+COPY ekyc-service ekyc-service
+COPY vci-service vci-service
 COPY tx-service tx-service
+COPY gateway gateway
 
-RUN chmod +x ./gradlew && ./gradlew :tx-service:test :tx-service:bootJar --no-daemon
+RUN gradle :tx-service:test :tx-service:bootJar --no-daemon
 
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app

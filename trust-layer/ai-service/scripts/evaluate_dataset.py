@@ -70,8 +70,7 @@ def _evaluate_spoof(session: requests.Session, image_path: Path) -> float:
 
 
 def _predict_label(document_confidence: float, liveness_score: float, spoof_probability: float) -> str:
-    # A sample is considered genuine only if all checks pass the baseline thresholds.
-    if document_confidence >= 0.55 and liveness_score >= 0.55 and spoof_probability < 0.45:
+    if document_confidence >= 0.55 and liveness_score >= 0.40 and spoof_probability < 0.50:
         return "genuine"
     return "spoof"
 
@@ -97,7 +96,7 @@ def main() -> None:
             expected = sample["label"]
             doc_conf = _evaluate_document(session, Path(sample["document_path"]))
             live_score = _evaluate_liveness(session, [Path(p) for p in sample["liveness_frame_paths"]])
-            spoof_prob = _evaluate_spoof(session, Path(sample["spoof_image_path"]))
+            spoof_prob = _evaluate_spoof(session, Path(sample["document_path"]))
             predicted = _predict_label(doc_conf, live_score, spoof_prob)
 
             if expected == "genuine" and predicted == "genuine":

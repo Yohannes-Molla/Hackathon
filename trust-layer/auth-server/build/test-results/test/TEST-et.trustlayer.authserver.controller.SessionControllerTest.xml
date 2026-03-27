@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="et.trustlayer.authserver.controller.SessionControllerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-26T18:51:27.686Z" hostname="Yohanness-MacBook-Air-2.local" time="2.999">
+<testsuite name="et.trustlayer.authserver.controller.SessionControllerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-27T08:32:50.861Z" hostname="Yohanness-MacBook-Air-2.local" time="4.536">
   <properties/>
-  <testcase name="activeSessionsReturnsCurrentUserSessions()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.211"/>
-  <testcase name="revokeSessionReturnsNotFoundWhenSessionNotOwnedByUser()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.021"/>
-  <testcase name="activeSessionsRequiresAuthentication()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.01"/>
-  <testcase name="revokeSessionReturnsNoContentWhenOwnedByUser()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.007"/>
-  <system-out><![CDATA[21:51:27.802 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [et.trustlayer.authserver.controller.SessionControllerTest]: SessionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-21:51:27.930 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration et.trustlayer.authserver.AuthServerApplication for test class et.trustlayer.authserver.controller.SessionControllerTest
+  <testcase name="activeSessionsReturnsCurrentUserSessions()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.358"/>
+  <testcase name="revokeSessionReturnsNotFoundWhenSessionNotOwnedByUser()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.029"/>
+  <testcase name="activeSessionsRequiresAuthentication()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.018"/>
+  <testcase name="revokeSessionReturnsNoContentWhenOwnedByUser()" classname="et.trustlayer.authserver.controller.SessionControllerTest" time="0.015"/>
+  <system-out><![CDATA[11:32:51.159 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [et.trustlayer.authserver.controller.SessionControllerTest]: SessionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+11:32:51.354 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration et.trustlayer.authserver.AuthServerApplication for test class et.trustlayer.authserver.controller.SessionControllerTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -17,16 +17,16 @@
 
  :: Spring Boot ::                (v3.4.1)
 
-2026-03-26T21:51:28.322+03:00  INFO 3988 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Starting SessionControllerTest using Java 21.0.4 with PID 3988 (started by work in /Users/work/Projects/Kifiya/Hackathon/trust-layer/auth-server)
-2026-03-26T21:51:28.323+03:00 DEBUG 3988 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Running with Spring Boot v3.4.1, Spring v6.2.1
-2026-03-26T21:51:28.323+03:00  INFO 3988 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : The following 1 profile is active: "local"
-2026-03-26T21:51:30.387+03:00 DEBUG 3988 --- [auth-server] [    Test worker] e.t.a.dpop.DPoPAuthenticationFilter      : Filter 'DPoPAuthenticationFilter' configured for use
-2026-03-26T21:51:30.387+03:00 DEBUG 3988 --- [auth-server] [    Test worker] e.t.authserver.session.RateLimitFilter   : Filter 'rateLimitFilter' configured for use
-2026-03-26T21:51:30.387+03:00 DEBUG 3988 --- [auth-server] [    Test worker] e.t.a.tenant.TenantRoutingFilter         : Filter 'tenantRoutingFilter' configured for use
-2026-03-26T21:51:30.392+03:00  INFO 3988 --- [auth-server] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-03-26T21:51:30.392+03:00  INFO 3988 --- [auth-server] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-03-26T21:51:30.393+03:00  INFO 3988 --- [auth-server] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-03-26T21:51:30.424+03:00  INFO 3988 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Started SessionControllerTest in 2.432 seconds (process running for 3.563)
+2026-03-27T11:32:51.897+03:00  INFO 19984 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Starting SessionControllerTest using Java 21.0.4 with PID 19984 (started by work in /Users/work/Projects/Kifiya/Hackathon/trust-layer/auth-server)
+2026-03-27T11:32:51.898+03:00 DEBUG 19984 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Running with Spring Boot v3.4.1, Spring v6.2.1
+2026-03-27T11:32:51.899+03:00  INFO 19984 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : The following 1 profile is active: "local"
+2026-03-27T11:32:54.878+03:00 DEBUG 19984 --- [auth-server] [    Test worker] e.t.a.dpop.DPoPAuthenticationFilter      : Filter 'DPoPAuthenticationFilter' configured for use
+2026-03-27T11:32:54.878+03:00 DEBUG 19984 --- [auth-server] [    Test worker] e.t.authserver.session.RateLimitFilter   : Filter 'rateLimitFilter' configured for use
+2026-03-27T11:32:54.879+03:00 DEBUG 19984 --- [auth-server] [    Test worker] e.t.a.tenant.TenantRoutingFilter         : Filter 'tenantRoutingFilter' configured for use
+2026-03-27T11:32:54.884+03:00  INFO 19984 --- [auth-server] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-03-27T11:32:54.885+03:00  INFO 19984 --- [auth-server] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-03-27T11:32:54.886+03:00  INFO 19984 --- [auth-server] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-03-27T11:32:54.961+03:00  INFO 19984 --- [auth-server] [    Test worker] e.t.a.controller.SessionControllerTest   : Started SessionControllerTest in 3.488 seconds (process running for 5.125)
 ]]></system-out>
   <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
 WARNING: A Java agent has been loaded dynamically (/Users/work/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.15.11/a38b16385e867f59a641330f0362ebe742788ed8/byte-buddy-agent-1.15.11.jar)

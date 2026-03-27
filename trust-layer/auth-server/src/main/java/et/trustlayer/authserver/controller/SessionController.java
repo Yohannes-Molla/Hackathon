@@ -1,7 +1,10 @@
 package et.trustlayer.authserver.controller;
 
+import et.trustlayer.authserver.repository.UserIdentityRepository;
+import et.trustlayer.authserver.service.AuditService;
 import et.trustlayer.authserver.session.KeycloakSessionService;
 import et.trustlayer.authserver.session.SessionView;
+import et.trustlayer.common.entity.UserIdentity;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SessionController {
 
     private final KeycloakSessionService keycloakSessionService;
+    private final AuditService auditService;
+    private final UserIdentityRepository userIdentityRepository;
 
     @GetMapping("/active")
     public ResponseEntity<List<SessionView>> activeSessions(@AuthenticationPrincipal Jwt jwt) {
@@ -33,6 +38,13 @@ public class SessionController {
         if (!revoked) {
             return ResponseEntity.status(404).body("Session not found for current user");
         }
+
+        userIdentityRepository.findByKeycloakSub(keycloakUserId).ifPresent(user ->
+            auditService.log(user.getTenant(), keycloakUserId, "SESSION_REVOKED",
+                    "Session", sessionId,
+                    "{\"revokedSessionId\":\"" + sessionId + "\"}")
+        );
+
         return ResponseEntity.noContent().build();
     }
 }

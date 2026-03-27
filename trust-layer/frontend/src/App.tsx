@@ -11,7 +11,18 @@ import { MerchantPortal } from './components/MerchantPortal';
 import { OidcCallback } from './components/OidcCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RoleRoute } from './components/RoleRoute';
-import { ShieldAlert, Store } from 'lucide-react';
+import { Bell, Menu, ShieldAlert, Store } from 'lucide-react';
+import { IdentityPage } from './components/IdentityPage';
+import { SessionsPage } from './components/SessionsPage';
+import { CardManagement } from './components/CardManagement';
+import { TransactionsPage } from './components/TransactionsPage';
+import { TransactionDetailPage } from './components/TransactionDetailPage';
+import { SettingsPage } from './components/SettingsPage';
+import { NotFoundPage } from './components/NotFoundPage';
+import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +47,10 @@ const HomePage: React.FC = () => {
 const MainLayout: React.FC = () => {
   const { tenant } = useTenant();
   const { isAuthenticated, logout, login, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { unreadCount, markAllRead } = useNotifications();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -64,6 +78,15 @@ const MainLayout: React.FC = () => {
                 >
                   Dashboard
                 </Link>
+                <Link to="/identity" className={`transition-colors hover:text-primary ${location.pathname === '/identity' ? 'text-primary' : ''}`}>
+                  Identity
+                </Link>
+                <Link to="/sessions" className={`transition-colors hover:text-primary ${location.pathname === '/sessions' ? 'text-primary' : ''}`}>
+                  Sessions
+                </Link>
+                <Link to="/cards" className={`transition-colors hover:text-primary ${location.pathname === '/cards' ? 'text-primary' : ''}`}>
+                  Cards
+                </Link>
                 {hasRealmRole(user, 'admin') && (
                   <Link
                     to="/admin"
@@ -85,6 +108,21 @@ const MainLayout: React.FC = () => {
               </div>
             )}
             <div className="flex items-center gap-3">
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => markAllRead()}
+                  className="relative rounded-xl border border-slate-200 bg-white p-2 text-slate-700"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-black text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+              )}
               {!isAuthenticated && (
                 <button
                   type="button"
@@ -106,14 +144,32 @@ const MainLayout: React.FC = () => {
               <button
                 type="button"
                 className="bg-slate-100 p-2 rounded-xl text-slate-900 border border-slate-200 hover:bg-slate-200 transition-colors"
+                onClick={toggleTheme}
               >
                 <span className="sr-only">Toggle Theme</span>
-                🌙
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+              <button type="button" className="md:hidden bg-slate-100 p-2 rounded-xl border border-slate-200" onClick={() => setMobileOpen((v) => !v)}>
+                <Menu className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
       </nav>
+      {mobileOpen && isAuthenticated && (
+        <div className="md:hidden border-b bg-white px-4 py-3">
+          <div className="flex flex-col gap-2 text-sm font-semibold">
+            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+            <Link to="/identity" onClick={() => setMobileOpen(false)}>Identity</Link>
+            <Link to="/sessions" onClick={() => setMobileOpen(false)}>Sessions</Link>
+            <Link to="/cards" onClick={() => setMobileOpen(false)}>Cards</Link>
+            <Link to="/transactions" onClick={() => setMobileOpen(false)}>Transactions</Link>
+            <Link to="/settings" onClick={() => setMobileOpen(false)}>Settings</Link>
+            {hasRealmRole(user, 'admin') && <Link to="/admin" onClick={() => setMobileOpen(false)}>Admin</Link>}
+            {hasRealmRole(user, 'merchant') && <Link to="/merchant" onClick={() => setMobileOpen(false)}>Merchant</Link>}
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col items-stretch justify-start relative w-full">
         <Outlet />
@@ -140,6 +196,12 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/identity" element={<ProtectedRoute><IdentityPage /></ProtectedRoute>} />
+        <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
+        <Route path="/cards" element={<ProtectedRoute><CardManagement /></ProtectedRoute>} />
+        <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+        <Route path="/transactions/:txId" element={<ProtectedRoute><TransactionDetailPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route
           path="/admin"
           element={
@@ -157,21 +219,29 @@ function AppRoutes() {
           }
         />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <TenantProvider>
-            <AppRoutes />
-          </TenantProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider>
+            <AuthProvider>
+              <TenantProvider>
+                <ToastProvider>
+                  <NotificationProvider>
+                    <AppRoutes />
+                  </NotificationProvider>
+                </ToastProvider>
+              </TenantProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

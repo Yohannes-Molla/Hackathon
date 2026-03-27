@@ -41,6 +41,7 @@ public class TransactionService {
     private final FraudScoringService fraudScoringService;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final AuditService auditService;
     private static final String NONCE_PREFIX = "tl:tx:nonce:";
 
     @Transactional
@@ -136,7 +137,13 @@ public class TransactionService {
                     .build()
             );
             
-            // 7. Success response
+            auditService.log(credential.getUserIdentity().getTenant(),
+                    credential.getUserIdentity().getId().toString(), "TX_SUBMITTED",
+                    "Transaction", txId,
+                    "{\"merchantId\":\"" + merchantId + "\",\"amountMinor\":" + amountMinor
+                            + ",\"currency\":\"" + currency + "\",\"status\":\"" + status
+                            + "\",\"fraudScore\":" + fraud.score() + "}");
+
             Map<String, Object> result = new HashMap<>();
             result.put("status", status);
             result.put("txId", txId);

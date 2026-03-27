@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWK;
 import et.trustlayer.authserver.repository.BiometricCredentialRepository;
 import et.trustlayer.authserver.repository.TenantRepository;
 import et.trustlayer.authserver.repository.UserIdentityRepository;
+import et.trustlayer.authserver.service.AuditService;
 import et.trustlayer.authserver.service.KeyAttestationService;
 import et.trustlayer.common.dto.CredentialRegistrationRequest;
 import et.trustlayer.common.entity.BiometricCredential;
@@ -28,6 +29,7 @@ public class CredentialRegistrationController {
     private final UserIdentityRepository userRepository;
     private final TenantRepository tenantRepository;
     private final KeyAttestationService attestationService;
+    private final AuditService auditService;
 
     @PostMapping("/register")
     @Transactional
@@ -49,7 +51,7 @@ public class CredentialRegistrationController {
                            .orElseThrow(() -> new RuntimeException("Tenant not found"));
 
             BiometricCredential credential = new BiometricCredential();
-            credential.setKeyId(UUID.randomUUID().toString()); // Use alias from Android or generate
+            credential.setKeyId(UUID.randomUUID().toString());
             credential.setPublicKeyJwk(request.getJwk());
             credential.setJwkThumbprint(jwkThumbprint);
             credential.setDeviceId(request.getDeviceId());
@@ -58,6 +60,10 @@ public class CredentialRegistrationController {
             credential.setTenant(tenant);
             credential.setUserIdentity(user);
             credentialRepository.save(credential);
+
+            auditService.log(tenant, userId.toString(), "CREDENTIAL_REGISTERED",
+                    "BiometricCredential", credential.getKeyId(),
+                    "{\"deviceId\":\"" + request.getDeviceId() + "\",\"credentialType\":\"SIGNING\"}");
             
             return ResponseEntity.ok().body("{\"keyId\":\"" + credential.getKeyId() + "\"}");
         } catch (ParseException | com.nimbusds.jose.JOSEException e) {

@@ -20,10 +20,19 @@
   --radius-xl: 1rem;
 }
 
+.dark {
+  --color-background: #0f172a;
+  --color-background-alt: #111827;
+}
+
 @layer base {
   body {
     @apply bg-background text-slate-900 font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .dark body {
+    @apply text-slate-100;
   }
 
   h1, h2, h3, h4 {

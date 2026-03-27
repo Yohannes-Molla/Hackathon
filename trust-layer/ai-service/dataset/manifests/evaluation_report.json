@@ -6,144 +6,144 @@
     "total_samples": 15
   },
   "metrics": {
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
     "far": 0.0,
-    "frr": 1.0,
+    "frr": 0.0,
     "confusion_matrix": {
-      "true_positive": 0,
+      "true_positive": 10,
       "true_negative": 5,
       "false_positive": 0,
-      "false_negative": 10
+      "false_negative": 0
     }
   },
   "group_accuracy": {
-    "dark|dim": 0.0,
-    "light|bright": 0.0,
-    "medium|normal": 0.0,
+    "dark|dim": 1.0,
+    "light|bright": 1.0,
+    "medium|normal": 1.0,
     "n/a|bright": 1.0
   },
   "sample_results": [
     {
       "sample_id": "genuine_01",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.72,
-      "liveness_score": 0.35,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.3442
     },
     {
       "sample_id": "genuine_02",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.6439,
-      "liveness_score": 0.1597,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.3618
     },
     {
       "sample_id": "genuine_03",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.7189,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4329,
+      "spoof_probability": 0.4052
     },
     {
       "sample_id": "genuine_04",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.6972,
-      "liveness_score": 0.35,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.2653
     },
     {
       "sample_id": "genuine_05",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.7216,
-      "liveness_score": 0.1597,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.3442
     },
     {
       "sample_id": "genuine_06",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.6895,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4329,
+      "spoof_probability": 0.3618
     },
     {
       "sample_id": "genuine_07",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.7347,
-      "liveness_score": 0.35,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.405
     },
     {
       "sample_id": "genuine_08",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.6889,
-      "liveness_score": 0.1597,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.2651
     },
     {
       "sample_id": "genuine_09",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.7305,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4329,
+      "spoof_probability": 0.3439
     },
     {
       "sample_id": "genuine_10",
       "expected": "genuine",
-      "predicted": "spoof",
+      "predicted": "genuine",
       "document_confidence": 0.6826,
-      "liveness_score": 0.35,
-      "spoof_probability": 1.0
+      "liveness_score": 0.4569,
+      "spoof_probability": 0.3618
     },
     {
       "sample_id": "spoof_01",
       "expected": "spoof",
       "predicted": "spoof",
       "document_confidence": 0.9133,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.0093,
+      "spoof_probability": 0.8436
     },
     {
       "sample_id": "spoof_02",
       "expected": "spoof",
       "predicted": "spoof",
       "document_confidence": 0.9133,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.0093,
+      "spoof_probability": 0.861
     },
     {
       "sample_id": "spoof_03",
       "expected": "spoof",
       "predicted": "spoof",
       "document_confidence": 0.9133,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.0093,
+      "spoof_probability": 0.8901
     },
     {
       "sample_id": "spoof_04",
       "expected": "spoof",
       "predicted": "spoof",
       "document_confidence": 0.9133,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.0093,
+      "spoof_probability": 0.7117
     },
     {
       "sample_id": "spoof_05",
       "expected": "spoof",
       "predicted": "spoof",
       "document_confidence": 0.9133,
-      "liveness_score": 0.0,
-      "spoof_probability": 1.0
+      "liveness_score": 0.0093,
+      "spoof_probability": 0.8436
     }
   ]
 }

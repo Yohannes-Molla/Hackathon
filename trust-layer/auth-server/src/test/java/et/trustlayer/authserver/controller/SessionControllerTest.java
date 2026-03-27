@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import et.trustlayer.authserver.config.SecurityConfig;
 import et.trustlayer.authserver.dpop.DPoPValidationResult;
 import et.trustlayer.authserver.dpop.DPoPProofValidator;
+import et.trustlayer.authserver.repository.UserIdentityRepository;
+import et.trustlayer.authserver.service.AuditService;
 import et.trustlayer.authserver.session.KeycloakSessionService;
 import et.trustlayer.authserver.session.SessionView;
 import java.util.List;
@@ -47,6 +49,12 @@ class SessionControllerTest {
 
     @MockBean
     private StringRedisTemplate stringRedisTemplate;
+
+    @MockBean
+    private AuditService auditService;
+
+    @MockBean
+    private UserIdentityRepository userIdentityRepository;
 
     @BeforeEach
     void setUpRedisMocks() {

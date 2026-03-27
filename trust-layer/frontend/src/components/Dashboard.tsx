@@ -1,29 +1,21 @@
-import React, { useState } from 'react';
-import { 
-    ArrowUpRight, 
-    ArrowDownLeft, 
-    Shield, 
-    Eye, 
-    EyeOff, 
-    Settings, 
-    LogOut,
-    Plus,
-    UserCheck,
-    History,
-    Check
-} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ArrowDownLeft, ArrowUpRight, Check, Eye, EyeOff, History, LogOut, Plus, Settings, Shield, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
+import { useToast } from '../context/ToastContext';
 
 interface Transaction {
     txId: string;
-    type: 'DEBIT' | 'CREDIT';
     merchantId: string;
     amountMinor: number;
     status: string;
+    currency: string;
     timestamp: string;
+    riskScore?: number;
 }
 
 interface VirtualCard {
@@ -41,27 +33,38 @@ interface DynamicCvvResponse {
 }
 
 export const Dashboard: React.FC = () => {
+    const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const { pushToast } = useToast();
     const [showPan, setShowPan] = useState(false);
+    const [showVerifyModal, setShowVerifyModal] = useState(false);
+    const [selectedClaims, setSelectedClaims] = useState<Record<string, boolean>>({
+        givenName: true,
+        familyName: true,
+        nationality: true,
+        assuranceLevel: true,
+    });
 
     // Dynamic fetching
     const userId = user?.profile?.sub || '00000000-0000-0000-0000-000000000000';
 
-    const { data: cards } = useQuery<VirtualCard[]>({
+    const authHeaders = useMemo(() => ({ Authorization: `Bearer ${user?.access_token}` }), [user?.access_token]);
+
+    const { data: cards, isLoading: cardsLoading, isError: cardsError, refetch: refetchCards } = useQuery<VirtualCard[]>({
         queryKey: ['cards', userId],
         queryFn: async () => {
             const res = await axios.get(`/api/vci/cards/${userId}`, {
-                headers: { Authorization: `Bearer ${user?.access_token}` }
+                headers: authHeaders
             });
             return res.data;
         }
     });
 
-    const { data: transactions } = useQuery<Transaction[]>({
+    const { data: transactions, isLoading: txLoading, isError: txError, refetch: refetchTx } = useQuery<Transaction[]>({
         queryKey: ['transactions', userId],
         queryFn: async () => {
             const res = await axios.get(`/api/tx/history/${userId}`, {
-                headers: { Authorization: `Bearer ${user?.access_token}` }
+                headers: authHeaders
             });
             return res.data;
         }
@@ -94,6 +97,15 @@ export const Dashboard: React.FC = () => {
 
                 {/* Card Container */}
                 <div className="relative group">
+                    {cardsLoading && <div className="rounded-3xl border bg-white p-6 text-sm text-slate-500">Loading card...</div>}
+                    {cardsError && (
+                        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                            Failed to load card. <button className="underline" onClick={() => refetchCards()}>Retry</button>
+                        </div>
+                    )}
+                    {!cardsLoading && !cardsError && !primaryCard && (
+                        <div className="rounded-3xl border bg-white p-6 text-sm text-slate-500">No card provisioned yet.</div>
+                    )}
                     <motion.div 
                         initial={{ rotateY: -10, rotateX: 5 }}
                         whileHover={{ rotateY: 0, rotateX: 0 }}
@@ -115,7 +127,7 @@ export const Dashboard: React.FC = () => {
                         <div className="z-10 space-y-4">
                             <div className="flex items-end gap-6">
                                 <span className="text-4xl font-mono tracking-[0.4em] drop-shadow-lg">
-                                    {showPan ? `4532 8821 0092 ${primaryCard?.lastFour || '1102'}` : `•••• •••• •••• ${primaryCard?.lastFour || '1102'}`}
+                                    {showPan ? `**** **** **** ${primaryCard?.lastFour || '----'}` : `•••• •••• •••• ${primaryCard?.lastFour || '----'}`}
                                 </span>
                                 <button 
                                    onClick={() => setShowPan(!showPan)}
@@ -127,7 +139,7 @@ export const Dashboard: React.FC = () => {
                             <div className="flex gap-10 text-sm opacity-80 uppercase tracking-widest font-bold">
                                 <div>
                                    <div className="text-[10px] opacity-60">Expiry</div>
-                                   <div>12/28</div>
+                                   <div>--/--</div>
                                 </div>
                                 <div>
                                    <div className="text-[10px] opacity-60">CVV</div>
@@ -159,7 +171,7 @@ export const Dashboard: React.FC = () => {
                             <History className="w-6 h-6 text-primary" />
                             <h3 className="text-2xl font-heading font-black">Transaction Activity</h3>
                         </div>
-                        <button className="text-xs font-bold text-primary px-3 py-1 bg-primary/5 rounded-full hover:bg-primary/10 transition-colors uppercase tracking-widest">View All</button>
+                        <Link to="/transactions" className="text-xs font-bold text-primary px-3 py-1 bg-primary/5 rounded-full hover:bg-primary/10 transition-colors uppercase tracking-widest">View All</Link>
                     </div>
 
                     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
@@ -173,12 +185,22 @@ export const Dashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
+                                {txLoading && (
+                                    <tr><td className="px-8 py-5 text-sm text-slate-500" colSpan={4}>Loading transactions...</td></tr>
+                                )}
+                                {txError && (
+                                    <tr>
+                                        <td className="px-8 py-5 text-sm text-red-700" colSpan={4}>
+                                            Failed to load transactions. <button className="underline" onClick={() => refetchTx()}>Retry</button>
+                                        </td>
+                                    </tr>
+                                )}
                                 {transactions?.map((tx) => {
                                     const amount = tx.amountMinor / 100;
-                                    const type = tx.type || (tx.amountMinor > 0 ? 'DEBIT' : 'CREDIT');
+                                    const type = tx.amountMinor > 0 ? 'DEBIT' : 'CREDIT';
                                     
                                     return (
-                                    <tr key={tx.txId} className="hover:bg-slate-50 transition-colors group">
+                                    <tr key={tx.txId} className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => navigate(`/transactions/${tx.txId}`, { state: { tx } })}>
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-4 text-sm font-bold text-slate-800">
                                                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
@@ -192,11 +214,14 @@ export const Dashboard: React.FC = () => {
                                         </td>
                                         <td className="px-8 py-5 text-sm text-slate-400">{new Date(tx.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                         <td className="px-8 py-5 text-right font-mono font-bold text-slate-800">
-                                            {type === 'DEBIT' ? '-' : '+'} ETB {amount.toLocaleString()}
+                                            {type === 'DEBIT' ? '-' : '+'} {tx.currency || 'ETB'} {amount.toLocaleString()}
                                         </td>
                                     </tr>
                                     );
                                 })}
+                                {!txLoading && !txError && (!transactions || transactions.length === 0) && (
+                                    <tr><td className="px-8 py-5 text-sm text-slate-500" colSpan={4}>No transactions yet.</td></tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -225,18 +250,18 @@ export const Dashboard: React.FC = () => {
                 </section>
 
                 <div className="flex flex-col gap-3">
-                   <button className="btn bg-white border border-slate-200 text-slate-900 w-full gap-3 shadow-sm hover:border-slate-300 transition-colors">
+                   <button className="btn bg-white border border-slate-200 text-slate-900 w-full gap-3 shadow-sm hover:border-slate-300 transition-colors" onClick={() => setShowVerifyModal(true)}>
                        <Shield className="w-5 h-5 text-primary" />
                        Verify ID at Merchant
                    </button>
-                   <button className="btn bg-white border border-slate-200 text-slate-900 w-full gap-3 shadow-sm hover:border-slate-300 transition-colors">
+                   <Link to="/cards" className="btn bg-white border border-slate-200 text-slate-900 w-full gap-3 shadow-sm hover:border-slate-300 transition-colors">
                        <Plus className="w-5 h-5 text-primary" />
                        Request Limit Increase
-                   </button>
-                   <button className="btn bg-slate-50 text-slate-600 border border-transparent w-full gap-3 mt-6 hover:bg-slate-100 transition-colors">
+                   </Link>
+                   <Link to="/settings" className="btn bg-slate-50 text-slate-600 border border-transparent w-full gap-3 mt-6 hover:bg-slate-100 transition-colors">
                        <Settings className="w-5 h-5" />
                        Settings
-                   </button>
+                   </Link>
                    <button 
                       onClick={() => logout()}
                       className="btn text-red-600 bg-red-50 hover:bg-red-100 transition-colors w-full gap-3"
@@ -246,6 +271,47 @@ export const Dashboard: React.FC = () => {
                    </button>
                 </div>
             </div>
+            {showVerifyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6">
+                        <h4 className="text-lg font-black">Share Claims QR</h4>
+                        <p className="mt-1 text-sm text-slate-500">Select claims and generate a merchant verification QR.</p>
+                        <div className="mt-3 space-y-2 text-sm">
+                            {Object.keys(selectedClaims).map((claim) => (
+                                <label key={claim} className="flex items-center justify-between rounded border p-2">
+                                    <span>{claim}</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedClaims[claim]}
+                                        onChange={(e) => setSelectedClaims((prev) => ({ ...prev, [claim]: e.target.checked }))}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-center rounded-xl border p-4">
+                            <QRCodeSVG
+                                value={JSON.stringify({
+                                    sub: userId,
+                                    claims: Object.fromEntries(Object.entries(selectedClaims).filter(([, enabled]) => enabled)),
+                                })}
+                                size={180}
+                            />
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => setShowVerifyModal(false)}>Close</button>
+                            <button
+                                className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-white"
+                                onClick={() => {
+                                    pushToast('success', 'Claim QR generated');
+                                    setShowVerifyModal(false);
+                                }}
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -34,6 +34,7 @@ public class EkycVerificationService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final AuditService auditService;
     private static final String SESSION_PREFIX = "tl:session:";
     private static final String EKYC_PUB_CHAN = "tl:events:ekyc_complete";
 
@@ -112,8 +113,17 @@ public class EkycVerificationService {
             log.warn("Failed to update session state for {}: {}", sessionId, ex.getMessage());
         }
 
+        String status = aiVerified ? "VERIFIED" : "PENDING_REVIEW";
+
+        auditService.log(user.getTenant(), userId.toString(),
+                aiVerified ? "EKYC_VERIFIED" : "EKYC_PENDING_REVIEW",
+                "UserIdentity", userId.toString(),
+                "{\"sessionId\":\"" + sessionId + "\",\"status\":\"" + status
+                        + "\",\"verificationMethod\":\"" + verificationMethod
+                        + "\",\"riskScore\":" + extractRiskScore(risk) + "}");
+
         Map<String, Object> result = new HashMap<>();
-        result.put("status", aiVerified ? "VERIFIED" : "PENDING_REVIEW");
+        result.put("status", status);
         result.put("verifiedClaims", verifiedClaims);
         result.put("risk", risk);
         result.put("verification_method", verificationMethod);

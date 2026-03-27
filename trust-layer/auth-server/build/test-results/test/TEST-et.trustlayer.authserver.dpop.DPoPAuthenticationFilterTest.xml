@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-26T18:51:30.688Z" hostname="Yohanness-MacBook-Air-2.local" time="0.006">
+<testsuite name="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-27T08:32:55.401Z" hostname="Yohanness-MacBook-Air-2.local" time="0.01">
   <properties/>
-  <testcase name="rejectsInvalidProofFromValidator()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.003"/>
-  <testcase name="allowsValidProofWithMatchingCnfThumbprint()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.0"/>
-  <testcase name="rejectsMissingDpopHeaderWhenJwtAuthenticated()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.0"/>
+  <testcase name="rejectsInvalidProofFromValidator()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.006"/>
+  <testcase name="allowsValidProofWithMatchingCnfThumbprint()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.002"/>
+  <testcase name="rejectsMissingDpopHeaderWhenJwtAuthenticated()" classname="et.trustlayer.authserver.dpop.DPoPAuthenticationFilterTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

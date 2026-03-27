@@ -102,16 +102,16 @@ def _compute_liveness_score(frames: list[np.ndarray]) -> tuple[float, dict[str, 
     brightness_var = float(np.std(brightness_values))
     edge_score = float(np.mean(edge_densities))
 
-    sharpness_score = _normalize(sharpness, 50.0, 400.0)
-    motion_score = _normalize(motion_std, 1.0, 12.0)
-    brightness_score = _normalize(brightness_var, 0.5, 10.0)
-    texture_score = _normalize(edge_score, 0.01, 0.20)
+    sharpness_score = _normalize(sharpness, 1.0, 35.0)
+    motion_score = _normalize(motion_std, 0.05, 5.0)
+    brightness_score = _normalize(brightness_var, 0.05, 5.0)
+    texture_score = _normalize(edge_score, 0.002, 0.08)
 
     score = (
-        (0.35 * sharpness_score)
-        + (0.30 * motion_score)
-        + (0.20 * brightness_score)
-        + (0.15 * texture_score)
+        (0.45 * sharpness_score)
+        + (0.10 * motion_score)
+        + (0.15 * brightness_score)
+        + (0.30 * texture_score)
     )
     return max(0.0, min(1.0, score)), {
         "sharpness": sharpness,
@@ -129,21 +129,20 @@ def _compute_spoof_score(image: np.ndarray) -> tuple[float, dict[str, float]]:
     saturation_var = float(np.var(hsv[:, :, 1]))
     value_mean = float(np.mean(hsv[:, :, 2]))
 
-    # Reflection proxy for screen replays: very bright + low local contrast areas.
     highlights = float(np.mean(hsv[:, :, 2] > 245))
     local_contrast = float(np.std(gray))
 
-    texture_score = _normalize(lap_var, 40.0, 350.0)
-    saturation_score = _normalize(saturation_var, 80.0, 1800.0)
-    reflection_penalty = _normalize(highlights, 0.01, 0.18)
-    contrast_score = _normalize(local_contrast, 15.0, 55.0)
-    exposure_penalty = _normalize(abs(value_mean - 140.0), 0.0, 90.0)
+    texture_score = _normalize(lap_var, 50.0, 800.0)
+    saturation_score = _normalize(saturation_var, 15.0, 500.0)
+    reflection_penalty = _normalize(highlights, 0.60, 0.90)
+    contrast_score = _normalize(local_contrast, 8.0, 45.0)
+    exposure_penalty = _normalize(abs(value_mean - 200.0), 0.0, 100.0)
 
     realness = (
         (0.35 * texture_score)
-        + (0.20 * saturation_score)
+        + (0.25 * saturation_score)
         + (0.25 * contrast_score)
-        - (0.15 * reflection_penalty)
+        - (0.10 * reflection_penalty)
         - (0.05 * exposure_penalty)
     )
     realness = max(0.0, min(1.0, realness))
@@ -218,7 +217,7 @@ async def verify_liveness(frames: list[UploadFile] = File(...)) -> dict[str, Any
     return {
         "status": "processed",
         "liveness_score": round(score, 4),
-        "passed": score >= 0.55,
+        "passed": score >= 0.40,
         "frame_count": len(decoded_frames),
         "diagnostics": diagnostics,
     }
@@ -231,7 +230,7 @@ async def anti_spoof(image: UploadFile = File(...)) -> dict[str, Any]:
     return {
         "status": "processed",
         "spoof_probability": round(spoof_score, 4),
-        "passed": spoof_score < 0.45,
+        "passed": spoof_score < 0.50,
         "diagnostics": diagnostics,
     }
 

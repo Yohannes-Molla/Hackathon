@@ -11,7 +11,6 @@ export const RegistrationFlow: React.FC = () => {
     const { login } = useAuth();
     const [step, setStep] = useState<Step>('INITIAL');
     const [sessionId] = useState(() => crypto.randomUUID());
-    const [stompClient, setStompClient] = useState<Client | null>(null);
 
     const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
 
@@ -32,13 +31,12 @@ export const RegistrationFlow: React.FC = () => {
 
         if (step === 'QR_HANDOFF') {
             client.activate();
-            setStompClient(client);
         }
 
         return () => {
-            if (stompClient) stompClient.deactivate();
+            client.deactivate();
         };
-    }, [step, sessionId]);
+    }, [sessionId, step, wsBaseUrl]);
 
     const stepsUI = {
         INITIAL: (
