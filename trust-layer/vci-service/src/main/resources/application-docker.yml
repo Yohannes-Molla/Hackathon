@@ -8,3 +8,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${TL_OIDC_ISSUER_URI:http://host.docker.internal:8180/realms/trust-layer}
+
+trustlayer:
+  vault:
+    base-url: ${TL_VAULT_BASE_URL:http://vault:8200}
+    token: ${TL_VAULT_TOKEN:root}

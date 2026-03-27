@@ -1,0 +1,17 @@
+.gradle
+**/build
+**/.gradle
+**/node_modules
+**/dist
+**/__pycache__
+**/.venv
+android-app
+frontend/node_modules
+frontend/dist
+ai-service/__pycache__
+ai-service/.venv
+.git
+*.md
+plans
+deploy
+docs

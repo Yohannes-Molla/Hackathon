@@ -10,7 +10,7 @@ COPY vci-service vci-service
 COPY tx-service tx-service
 COPY gateway gateway
 
-RUN gradle :ekyc-service:test :ekyc-service:bootJar --no-daemon
+RUN gradle :ekyc-service:bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app

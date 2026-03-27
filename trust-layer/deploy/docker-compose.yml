@@ -16,7 +16,8 @@ services:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 20
+      start_period: 30s
 
   postgres:
     image: postgres:16-alpine
@@ -69,10 +70,24 @@ services:
     image: axllent/mailpit
     container_name: tl-mailpit
     ports:
-      - "${TL_MAILPIT_UI_PORT:-8025}:8025" # Web UI
-      - "${TL_MAILPIT_SMTP_PORT:-1025}:1025" # SMTP
+      - "${TL_MAILPIT_UI_PORT:-8025}:8025"
+      - "${TL_MAILPIT_SMTP_PORT:-1025}:1025"
     environment:
       MP_DEBUG: "false"
+
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Dockerfile
+    container_name: tl-ai-service
+    ports:
+      - "${TL_AI_SERVICE_PORT:-5000}:5000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   auth-server:
     build:
@@ -87,7 +102,7 @@ services:
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
-      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_REDIS_PORT: "6379"
       TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
       TL_KEYCLOAK_BASE_URL: ${TL_KEYCLOAK_BASE_URL:-http://host.docker.internal:8180}
       TL_KEYCLOAK_REALM: ${TL_KEYCLOAK_REALM:-trust-layer}
@@ -103,6 +118,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:9000/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   ekyc-service:
     build:
@@ -117,7 +140,7 @@ services:
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
-      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_REDIS_PORT: "6379"
       TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
       TL_AI_BASE_URL: ${TL_AI_BASE_URL:-http://ai-service:5000}
     extra_hosts:
@@ -127,6 +150,16 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:9002/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   tx-service:
     build:
@@ -141,7 +174,7 @@ services:
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
-      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_REDIS_PORT: "6379"
       TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -150,6 +183,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:9003/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   vci-service:
     build:
@@ -164,11 +205,23 @@ services:
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_VAULT_BASE_URL: ${TL_VAULT_BASE_URL:-http://vault:8200}
+      TL_VAULT_TOKEN: ${TL_VAULT_TOKEN:-root}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
+      vault:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:9004/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   gateway:
     build:
@@ -187,23 +240,20 @@ services:
       TL_TX_SERVICE_URI: ${TL_TX_SERVICE_URI:-http://tx-service:9003}
       TL_VCI_SERVICE_URI: ${TL_VCI_SERVICE_URI:-http://vci-service:9004}
     depends_on:
-      - auth-server
-      - ekyc-service
-      - tx-service
-      - vci-service
-
-  ai-service:
-    build:
-      context: ../ai-service
-      dockerfile: Dockerfile
-    container_name: tl-ai-service
-    ports:
-      - "${TL_AI_SERVICE_PORT:-5000}:5000"
+      auth-server:
+        condition: service_healthy
+      ekyc-service:
+        condition: service_healthy
+      tx-service:
+        condition: service_healthy
+      vci-service:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5000/health"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 12
+      start_period: 20s
 
   frontend:
     build:
@@ -213,7 +263,8 @@ services:
     ports:
       - "${TL_FRONTEND_PORT:-3000}:80"
     depends_on:
-      - gateway
+      gateway:
+        condition: service_healthy
 
 volumes:
   pgdata:
