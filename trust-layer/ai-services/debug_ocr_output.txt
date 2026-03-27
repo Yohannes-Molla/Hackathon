@@ -1,0 +1,33 @@
+=== RAW OCR TEXT ===
+Coa] eateRe 2840 cos@ee nce Nice 08
+ows] ~~ Ethiopian Digital ID Card Esg/ National ID
+= a | ODA NF? | Full Name |
+Bo. ~ — ANELUP ANT ANAT
+an _ Abdurezak Abazinabd Abalencho sy
+3 oe 7 PTOAL $Y | Date of Birth *
+ogy ce 13/06/1996 |2004/02/21 |
+BO ~~) | Pt| Sex
+a \ oe m72 | Male Vee MS |
+SS , x PFLPNSNT Y| Date of Expiry oS 2 => Band | of |
+SF, | |. \ 2026/06/20|2034/Feb/27 }
+go |S. an nce 342139586 2364820 G)
+Sees | ||| ra
+
+
+=== EXTRACTED FIELDS ===
+full_name: Abdurezak Abazinabd Abalencho
+dob_ec: 13/06/1996
+dob_gc: 2004/02/21
+id_number: 3421395862364820
+gender: Male
+expiry_gc: 2026/06/20
+expiry_ec: 2034/Feb/27
+
+=== MATCH SCORES ===
+full_name: 98.2%
+dob: 100.0%
+id_number: 100.0%
+gender: 100.0%
+expiry_date: 100.0%
+
+AVERAGE (core fields): 99.56%
