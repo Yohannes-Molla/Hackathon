@@ -11,7 +11,10 @@ interface AuthContextType {
 
 const authority = import.meta.env.VITE_OIDC_AUTHORITY || 'http://localhost:8180/realms/trust-layer';
 const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'trust-layer-web';
-const scope = import.meta.env.VITE_OIDC_SCOPE || 'openid profile email offline_access ekyc:verify vci:provision tx:sign identity:read';
+// Standard OIDC scopes only; custom API scopes are assigned as default client scopes in Keycloak.
+const scope = import.meta.env.VITE_OIDC_SCOPE || 'openid profile email';
+
+const realmPath = '/realms/trust-layer/protocol/openid-connect';
 
 const settings: UserManagerSettings = {
   authority,
@@ -20,8 +23,18 @@ const settings: UserManagerSettings = {
   post_logout_redirect_uri: window.location.origin,
   response_type: 'code',
   scope,
-  automaticSilentRenew: true,
-  monitorSession: true
+  // Do not run silent renew (hidden iframe to Keycloak). It re-triggers on token expiry and looks
+  // like a sign-in popup on every page, and fails when refresh_token is missing or silent URI matches /callback.
+  automaticSilentRenew: false,
+  // Session iframe (login-status-iframe) on every load; disable — looks like a popup / breaks with third-party cookies.
+  monitorSession: false,
+  // Route token/userinfo calls through the Vite dev-server proxy so the
+  // browser makes a same-origin fetch and CORS is not required.
+  metadataSeed: {
+    token_endpoint: `${window.location.origin}${realmPath}/token`,
+    userinfo_endpoint: `${window.location.origin}${realmPath}/userinfo`,
+    revocation_endpoint: `${window.location.origin}${realmPath}/revoke`,
+  },
 };
 
 export const userManager = new UserManager(settings);

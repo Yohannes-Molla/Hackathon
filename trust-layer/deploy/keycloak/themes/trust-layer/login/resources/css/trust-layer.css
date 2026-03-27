@@ -1,0 +1,111 @@
+/* Trust Layer — aligned with frontend (primary indigo, Inter, slate) */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap");
+
+:root {
+  --tl-primary: #6366f1;
+  --tl-primary-hover: #4f46e5;
+  --tl-slate-50: #f8fafc;
+  --tl-slate-100: #f1f5f9;
+  --tl-slate-600: #475569;
+  --tl-slate-800: #1e293b;
+  --tl-slate-900: #0f172a;
+  --tl-card: rgba(255, 255, 255, 0.92);
+  --tl-radius: 1rem;
+}
+
+.login-pf body,
+body.login-pf {
+  background: linear-gradient(145deg, var(--tl-slate-100) 0%, #e0e7ff 45%, var(--tl-slate-50) 100%) !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  color: var(--tl-slate-800) !important;
+}
+
+#kc-header-wrapper,
+#kc-page-title {
+  font-family: "Outfit", "Inter", sans-serif !important;
+}
+
+#kc-page-title {
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--tl-slate-900) !important;
+}
+
+#kc-content {
+  max-width: 28rem;
+}
+
+.card-pf {
+  background: var(--tl-card) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  border-radius: var(--tl-radius) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Primary button */
+.pf-c-button.pf-m-primary,
+.btn-primary,
+input[type="submit"].btn-primary,
+button.btn-primary {
+  background-color: var(--tl-primary) !important;
+  border-color: var(--tl-primary) !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.65rem 1.25rem !important;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.25) !important;
+}
+
+.pf-c-button.pf-m-primary:hover,
+.btn-primary:hover {
+  background-color: var(--tl-primary-hover) !important;
+  border-color: var(--tl-primary-hover) !important;
+}
+
+/* Inputs */
+.pf-c-form-control,
+input[type="text"],
+input[type="password"] {
+  border-radius: 0.75rem !important;
+  border-color: #cbd5e1 !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.pf-c-form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: var(--tl-primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Links */
+a {
+  color: var(--tl-primary) !important;
+}
+
+a:hover {
+  color: var(--tl-primary-hover) !important;
+}
+
+/* Subtitle / realm name */
+#kc-locale,
+.subtitle {
+  color: var(--tl-slate-600) !important;
+}
+
+/* Logo area — subtle badge */
+#kc-header {
+  margin-bottom: 1.5rem;
+}
+
+#kc-header-wrapper::before {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, var(--tl-primary), #818cf8);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35);
+}

@@ -30,7 +30,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const client = new Client({
       brokerURL: `${wsBaseUrl}/ws`,
-      reconnectDelay: 5000,
+      reconnectDelay: 30_000,
+      connectionTimeout: 10_000,
       onConnect: () => {
         client.subscribe(`/topic/session/${user.profile.sub}`, (message) => {
           try {
@@ -49,6 +50,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }
         });
       },
+      onWebSocketError: () => {},
+      onStompError: () => {},
     });
 
     client.activate();

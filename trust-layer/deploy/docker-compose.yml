@@ -12,6 +12,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${TL_KEYCLOAK_ADMIN_PASSWORD:-admin}
     volumes:
       - ./keycloak/realm-trust-layer.json:/opt/keycloak/data/import/realm-trust-layer.json:ro
+      - ./keycloak/themes/trust-layer:/opt/keycloak/themes/trust-layer:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
       interval: 10s
@@ -81,9 +82,9 @@ services:
       dockerfile: Dockerfile
     container_name: tl-ai-service
     ports:
-      - "${TL_AI_SERVICE_PORT:-5000}:5000"
+      - "${TL_AI_SERVICE_PORT:-5001}:5000"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -98,6 +99,8 @@ services:
       - "${TL_AUTH_SERVER_PORT:-9000}:9000"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      SPRING_DATA_REDIS_PORT: "6379"
       TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
@@ -136,6 +139,8 @@ services:
       - "${TL_EKYC_SERVICE_PORT:-9002}:9002"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      SPRING_DATA_REDIS_PORT: "6379"
       TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
@@ -170,6 +175,8 @@ services:
       - "${TL_TX_SERVICE_PORT:-9003}:9003"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      SPRING_DATA_REDIS_PORT: "6379"
       TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
@@ -232,6 +239,7 @@ services:
       - "${TL_GATEWAY_PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
       TL_WEB_ORIGIN: ${TL_WEB_ORIGIN:-http://localhost:3000}
       TL_WEB_ORIGIN_ALT: ${TL_WEB_ORIGIN_ALT:-http://127.0.0.1:3000}
       TL_KEYCLOAK_ORIGIN: ${TL_KEYCLOAK_ORIGIN:-http://localhost:8180}
@@ -249,7 +257,7 @@ services:
       vci-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/actuator/health); [ \"$$code\" = \"200\" ] || [ \"$$code\" = \"401\" ]"]
       interval: 10s
       timeout: 5s
       retries: 12

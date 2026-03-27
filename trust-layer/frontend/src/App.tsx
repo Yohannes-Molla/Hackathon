@@ -19,6 +19,7 @@ import { TransactionsPage } from './components/TransactionsPage';
 import { TransactionDetailPage } from './components/TransactionDetailPage';
 import { SettingsPage } from './components/SettingsPage';
 import { NotFoundPage } from './components/NotFoundPage';
+import { SignInPage } from './components/SignInPage';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { NotificationProvider, useNotifications } from './context/NotificationContext';
@@ -46,7 +47,7 @@ const HomePage: React.FC = () => {
 
 const MainLayout: React.FC = () => {
   const { tenant } = useTenant();
-  const { isAuthenticated, logout, login, user } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { unreadCount, markAllRead } = useNotifications();
   const location = useLocation();
@@ -124,13 +125,12 @@ const MainLayout: React.FC = () => {
                 </button>
               )}
               {!isAuthenticated && (
-                <button
-                  type="button"
-                  onClick={() => login()}
+                <Link
+                  to="/signin"
                   className="text-xs font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
                 >
                   Sign in
-                </button>
+                </Link>
               )}
               {isAuthenticated && (
                 <button
@@ -188,6 +188,7 @@ function AppRoutes() {
       <Route path="/callback" element={<OidcCallback />} />
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/signin" element={<SignInPage />} />
         <Route
           path="/dashboard"
           element={

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userManager } from '../context/AuthContext';
+import { POST_LOGIN_REDIRECT_KEY } from '../auth/postLoginRedirect';
+
+function safePostLoginPath(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
+  return raw;
+}
 
 export const OidcCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -9,7 +15,11 @@ export const OidcCallback: React.FC = () => {
   useEffect(() => {
     userManager
       .signinRedirectCallback()
-      .then(() => navigate('/dashboard', { replace: true }))
+      .then(() => {
+        const stored = sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY);
+        sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY);
+        navigate(safePostLoginPath(stored), { replace: true });
+      })
       .catch((e: unknown) => {
         const message = e instanceof Error ? e.message : 'Sign-in failed';
         setError(message);

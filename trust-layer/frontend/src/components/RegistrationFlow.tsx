@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Client } from '@stomp/stompjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowRight, Smartphone, ShieldCheck, Mail, IdCard, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 type Step = 'INITIAL' | 'QR_HANDOFF' | 'VERIFYING' | 'COMPLETE';
@@ -71,6 +72,13 @@ export const RegistrationFlow: React.FC = () => {
                 >
                     Start Registration <ArrowRight className="w-4 h-4" />
                 </button>
+
+                <p className="text-center text-sm text-slate-600">
+                  Already have an account?{' '}
+                  <Link to="/signin" className="font-semibold text-primary hover:underline">
+                    Sign in
+                  </Link>
+                </p>
             </motion.div>
         ),
         QR_HANDOFF: (
