@@ -1,5 +1,6 @@
 package et.trustlayer.authserver.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -13,12 +14,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import et.trustlayer.authserver.config.SecurityConfig;
 import et.trustlayer.authserver.dpop.DPoPValidationResult;
 import et.trustlayer.authserver.dpop.DPoPProofValidator;
+import et.trustlayer.authserver.repository.TenantRepository;
 import et.trustlayer.authserver.repository.UserIdentityRepository;
+import et.trustlayer.common.entity.Tenant;
 import et.trustlayer.authserver.service.AuditService;
 import et.trustlayer.authserver.session.KeycloakSessionService;
 import et.trustlayer.authserver.session.SessionView;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -56,8 +61,20 @@ class SessionControllerTest {
     @MockBean
     private UserIdentityRepository userIdentityRepository;
 
+    @MockBean
+    private TenantRepository tenantRepository;
+
     @BeforeEach
     void setUpRedisMocks() {
+        Tenant hub = Tenant.builder()
+                .id(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+                .name("Trust Layer Hub")
+                .slug("hub")
+                .trustFramework("et_nbe_kyc")
+                .hub(true)
+                .build();
+        given(tenantRepository.findBySlug(any(String.class))).willReturn(Optional.of(hub));
+
         @SuppressWarnings("unchecked")
         ValueOperations<String, String> valueOperations = Mockito.mock(ValueOperations.class);
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);

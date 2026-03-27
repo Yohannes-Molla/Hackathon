@@ -44,11 +44,19 @@ public class UserIdentityLifecycleService {
     private Optional<UserIdentity> createFromJwt(Jwt jwt) {
         String givenName = claimAsString(jwt, "given_name");
         String familyName = claimAsString(jwt, "family_name");
-        LocalDate birthDate = parseDate(claimAsString(jwt, "birthdate"));
+        String birthRaw = claimAsString(jwt, "birthdate");
+        LocalDate birthDate = parseDate(birthRaw);
         String nationality = claimAsString(jwt, "nationality");
 
-        if (givenName == null || familyName == null || birthDate == null || nationality == null) {
+        if (givenName == null || familyName == null) {
             return Optional.empty();
+        }
+        // Demo-friendly defaults when Keycloak omits optional profile claims
+        if (birthDate == null) {
+            birthDate = LocalDate.parse("1990-01-01");
+        }
+        if (nationality == null) {
+            nationality = "ETH";
         }
 
         if (TenantContext.getTenantId() == null) {

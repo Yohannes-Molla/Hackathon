@@ -87,6 +87,34 @@
             "claim.name": "preferred_username",
             "jsonType.label": "String"
           }
+        },
+        {
+          "name": "birthdate",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "birthdate",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "birthdate",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "nationality",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "nationality",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "nationality",
+            "jsonType.label": "String"
+          }
         }
       ]
     },
@@ -366,6 +394,10 @@
       "emailVerified": true,
       "firstName": "Demo",
       "lastName": "User",
+      "attributes": {
+        "birthdate": ["1990-01-15"],
+        "nationality": ["ETH"]
+      },
       "credentials": [
         {
           "type": "password",
@@ -385,6 +417,10 @@
       "emailVerified": true,
       "firstName": "Admin",
       "lastName": "User",
+      "attributes": {
+        "birthdate": ["1985-06-15"],
+        "nationality": ["ETH"]
+      },
       "credentials": [
         {
           "type": "password",
@@ -404,6 +440,10 @@
       "emailVerified": true,
       "firstName": "Merchant",
       "lastName": "User",
+      "attributes": {
+        "birthdate": ["1988-03-20"],
+        "nationality": ["ETH"]
+      },
       "credentials": [
         {
           "type": "password",
