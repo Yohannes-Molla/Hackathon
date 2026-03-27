@@ -106,7 +106,8 @@ services:
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
       TL_REDIS_PORT: "6379"
-      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://localhost:8180/realms/trust-layer}
+      TL_OIDC_JWK_SET_URI: ${TL_OIDC_JWK_SET_URI:-http://host.docker.internal:8180/realms/trust-layer/protocol/openid-connect/certs}
       TL_KEYCLOAK_BASE_URL: ${TL_KEYCLOAK_BASE_URL:-http://host.docker.internal:8180}
       TL_KEYCLOAK_REALM: ${TL_KEYCLOAK_REALM:-trust-layer}
       TL_KEYCLOAK_ADMIN_CLIENT_ID: ${TL_KEYCLOAK_ADMIN_CLIENT_ID:-admin-cli}
@@ -146,7 +147,8 @@ services:
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
       TL_REDIS_PORT: "6379"
-      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://localhost:8180/realms/trust-layer}
+      TL_OIDC_JWK_SET_URI: ${TL_OIDC_JWK_SET_URI:-http://host.docker.internal:8180/realms/trust-layer/protocol/openid-connect/certs}
       TL_AI_BASE_URL: ${TL_AI_BASE_URL:-http://ai-service:5000}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -182,7 +184,8 @@ services:
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
       TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
       TL_REDIS_PORT: "6379"
-      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://localhost:8180/realms/trust-layer}
+      TL_OIDC_JWK_SET_URI: ${TL_OIDC_JWK_SET_URI:-http://host.docker.internal:8180/realms/trust-layer/protocol/openid-connect/certs}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -211,7 +214,8 @@ services:
       TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
       TL_DB_USER: ${TL_DB_USER:-tl_user}
       TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
-      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://localhost:8180/realms/trust-layer}
+      TL_OIDC_JWK_SET_URI: ${TL_OIDC_JWK_SET_URI:-http://host.docker.internal:8180/realms/trust-layer/protocol/openid-connect/certs}
       TL_VAULT_BASE_URL: ${TL_VAULT_BASE_URL:-http://vault:8200}
       TL_VAULT_TOKEN: ${TL_VAULT_TOKEN:-root}
     extra_hosts:
@@ -257,7 +261,7 @@ services:
       vci-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/actuator/health); [ \"$$code\" = \"200\" ] || [ \"$$code\" = \"401\" ]"]
+      test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/tenants/hub/branding); [ \"$$code\" = \"200\" ] || [ \"$$code\" = \"404\" ]"]
       interval: 10s
       timeout: 5s
       retries: 12

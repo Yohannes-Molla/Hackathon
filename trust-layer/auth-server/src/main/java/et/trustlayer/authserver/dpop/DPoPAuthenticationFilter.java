@@ -25,6 +25,12 @@ public class DPoPAuthenticationFilter extends OncePerRequestFilter {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            Object cnfClaim = jwtAuth.getToken().getClaims().get("cnf");
+            if (cnfClaim == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String dpopHeader = request.getHeader("DPoP");
             if (dpopHeader == null || dpopHeader.isEmpty()) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing DPoP header");
@@ -41,16 +47,11 @@ public class DPoPAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // Verify cnf binding in the JWT
-            Object cnfClaim = jwtAuth.getToken().getClaims().get("cnf");
-            if (cnfClaim instanceof java.util.Map cnfMap) {
+            if (cnfClaim instanceof java.util.Map<?, ?> cnfMap) {
                 if (!result.getJwkThumbprint().equals(cnfMap.get("jkt"))) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "DPoP Thumbprint mismatch");
                     return;
                 }
-            } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token missing 'cnf' claim for DPoP binding");
-                return;
             }
         }
         filterChain.doFilter(request, response);

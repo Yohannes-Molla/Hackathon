@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userManager } from '../context/AuthContext';
 import { POST_LOGIN_REDIRECT_KEY } from '../auth/postLoginRedirect';
@@ -11,8 +11,13 @@ function safePostLoginPath(raw: string | null): string {
 export const OidcCallback: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const handled = useRef(false);
 
   useEffect(() => {
+    // StrictMode double-mounts effects; the auth code can only be exchanged once.
+    if (handled.current) return;
+    handled.current = true;
+
     userManager
       .signinRedirectCallback()
       .then(() => {

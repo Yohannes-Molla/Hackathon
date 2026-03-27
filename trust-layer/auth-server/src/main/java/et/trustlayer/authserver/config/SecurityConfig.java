@@ -24,12 +24,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api/tenants/*/branding").permitAll()
                 .anyRequest().authenticated()
             )
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/api/**", "/ws/**")
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+            .exceptionHandling(eh -> eh
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"unauthorized\"}");
+                })
+            )
             .addFilterAfter(dPoPAuthenticationFilter, BearerTokenAuthenticationFilter.class);
         return http.build();
     }

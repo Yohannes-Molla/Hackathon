@@ -14,8 +14,10 @@ import et.trustlayer.common.entity.Transaction;
 import et.trustlayer.tx.dto.SignedTransactionRequest;
 import et.trustlayer.tx.dto.InitiateTransactionRequest;
 import et.trustlayer.tx.dto.TransactionRecordResponse;
+import et.trustlayer.common.entity.UserIdentity;
 import et.trustlayer.tx.repository.BiometricCredentialRepository;
 import et.trustlayer.tx.repository.TransactionRepository;
+import et.trustlayer.tx.repository.UserIdentityRepository;
 import et.trustlayer.tx.repository.VirtualCardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +29,11 @@ import java.util.List;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -36,6 +42,7 @@ import java.util.UUID;
 public class TransactionService {
 
     private final BiometricCredentialRepository credentialRepository;
+    private final UserIdentityRepository userIdentityRepository;
     private final VirtualCardRepository virtualCardRepository;
     private final TransactionRepository transactionRepository;
     private final FraudScoringService fraudScoringService;
@@ -43,6 +50,19 @@ public class TransactionService {
     private final ObjectMapper objectMapper;
     private final AuditService auditService;
     private static final String NONCE_PREFIX = "tl:tx:nonce:";
+
+    private UserIdentity resolveUserIdentity(String userIdOrKeycloakSub) {
+        Optional<UserIdentity> bySub = userIdentityRepository.findByKeycloakSub(userIdOrKeycloakSub);
+        if (bySub.isPresent()) {
+            return bySub.get();
+        }
+        try {
+            return userIdentityRepository.findById(UUID.fromString(userIdOrKeycloakSub))
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("User not found");
+        }
+    }
 
     @Transactional
     public Map<String, Object> verifyAndSubmitTransaction(SignedTransactionRequest request) {
@@ -174,7 +194,8 @@ public class TransactionService {
             txState.put("amountMinor", request.getAmountMinor());
             txState.put("merchantId", request.getMerchantId());
             txState.put("currency", request.getCurrency());
-            
+            txState.put("userId", request.getUserId());
+
             redisTemplate.opsForValue().set(NONCE_PREFIX + nonceId, objectMapper.writeValueAsString(txState), Duration.ofSeconds(60));
         } catch (Exception e) {
             throw new RuntimeException("Failed to cache transaction state", e);
@@ -193,8 +214,127 @@ public class TransactionService {
         return response;
     }
 
-    public List<TransactionRecordResponse> getTransactionHistory(String userId) {
-        return transactionRepository.findByUserIdentityIdOrderByCreatedAtDesc(UUID.fromString(userId))
+    /**
+     * Web demo path: approve a merchant challenge using OIDC authentication only (no biometric signature).
+     */
+    @Transactional
+    public Map<String, Object> approveWebTransaction(String keycloakSub, String nonce) {
+        String raw = redisTemplate.opsForValue().get(NONCE_PREFIX + nonce);
+        if (raw == null) {
+            throw new RuntimeException("Invalid or expired nonce");
+        }
+        try {
+            Map<String, Object> txState = objectMapper.readValue(raw, Map.class);
+            String payer = (String) txState.get("userId");
+            if (payer == null || !payer.equals(keycloakSub)) {
+                throw new RuntimeException("Not authorized for this payment challenge");
+            }
+
+            UserIdentity user = resolveUserIdentity(keycloakSub);
+            List<VirtualCard> cards = virtualCardRepository.findByUserIdentityId(user.getId());
+            if (cards.isEmpty() || !"ACTIVE".equals(cards.get(0).getStatus())) {
+                throw new RuntimeException("No active virtual card found for user");
+            }
+            VirtualCard card = cards.get(0);
+
+            long amountMinor = parseAmountMinor(txState.get("amountMinor"));
+            String merchantId = String.valueOf(txState.getOrDefault("merchantId", "UNKNOWN"));
+            String currency = String.valueOf(txState.getOrDefault("currency", card.getCurrency()));
+
+            redisTemplate.delete(NONCE_PREFIX + nonce);
+
+            FraudScoringService.FraudScoreResult fraud = fraudScoringService.score(
+                    amountMinor,
+                    card.getSingleTxLimitMinor(),
+                    transactionRepository.findByUserIdentityIdOrderByCreatedAtDesc(user.getId())
+            );
+
+            String status = "APPROVED";
+            if ("BLOCK".equals(fraud.decision())) {
+                status = "REJECTED";
+            } else if ("REVIEW".equals(fraud.decision())) {
+                status = "PENDING_REVIEW";
+            }
+
+            Transaction saved = transactionRepository.save(
+                    Transaction.builder()
+                            .tenant(user.getTenant())
+                            .userIdentity(user)
+                            .virtualCard(card)
+                            .merchantId(merchantId)
+                            .amountMinor(amountMinor)
+                            .currency(currency)
+                            .status(status)
+                            .nonce(nonce)
+                            .signatureVerified(false)
+                            .riskScore(fraud.score())
+                            .fraudScore(fraud.score())
+                            .fraudFlags(String.join(",", fraud.flags()))
+                            .build()
+            );
+
+            auditService.log(user.getTenant(),
+                    user.getId().toString(), "TX_WEB_APPROVED",
+                    "Transaction", saved.getId().toString(),
+                    "{\"merchantId\":\"" + merchantId + "\",\"amountMinor\":" + amountMinor
+                            + ",\"currency\":\"" + currency + "\",\"status\":\"" + status + "\"}");
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", status);
+            result.put("txId", saved.getId().toString());
+            result.put("fraudScore", fraud.score());
+            result.put("fraudFlags", fraud.flags());
+
+            redisTemplate.convertAndSend(
+                    "APPROVED".equals(status) ? "tl:events:tx_approved" : "tl:events:tx_rejected",
+                    user.getId().toString()
+            );
+
+            return result;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Web approval failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lists Redis-backed payment challenges for the payer (Keycloak subject). Demo-scale only (uses KEYS).
+     */
+    public List<Map<String, Object>> listPendingChallenges(String keycloakSub) {
+        Set<String> keys = redisTemplate.keys(NONCE_PREFIX + "*");
+        if (keys == null || keys.isEmpty()) {
+            return List.of();
+        }
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (String key : keys) {
+            try {
+                String raw = redisTemplate.opsForValue().get(key);
+                if (raw == null) {
+                    continue;
+                }
+                Map<String, Object> txState = objectMapper.readValue(raw, Map.class);
+                if (!keycloakSub.equals(txState.get("userId"))) {
+                    continue;
+                }
+                String nonce = key.substring(NONCE_PREFIX.length());
+                Map<String, Object> row = new HashMap<>();
+                row.put("nonce", nonce);
+                row.put("amountMinor", txState.get("amountMinor"));
+                row.put("merchantId", txState.get("merchantId"));
+                row.put("currency", txState.get("currency"));
+                row.put("txId", txState.get("txId"));
+                out.add(row);
+            } catch (Exception ignored) {
+                // skip malformed entries
+            }
+        }
+        return out;
+    }
+
+    public List<TransactionRecordResponse> getTransactionHistory(String userIdOrKeycloakSub) {
+        UserIdentity user = resolveUserIdentity(userIdOrKeycloakSub);
+        return transactionRepository.findByUserIdentityIdOrderByCreatedAtDesc(user.getId())
             .stream()
             .map(tx -> TransactionRecordResponse.builder()
                 .txId(tx.getId().toString())

@@ -5,6 +5,8 @@ import et.trustlayer.tx.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +34,31 @@ public class TransactionController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Transaction Submit Failed", e);
+            Map<String, Object> err = new HashMap<>();
+            err.put("status", "REJECTED");
+            err.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @GetMapping("/pending-challenges")
+    public ResponseEntity<List<Map<String, Object>>> pendingChallenges(@AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(transactionService.listPendingChallenges(jwt.getSubject()));
+    }
+
+    @PostMapping("/approve-web")
+    public ResponseEntity<Map<String, Object>> approveWeb(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody Map<String, String> body) {
+        try {
+            String nonce = body != null ? body.get("nonce") : null;
+            if (nonce == null || nonce.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "nonce required"));
+            }
+            Map<String, Object> result = transactionService.approveWebTransaction(jwt.getSubject(), nonce);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Web transaction approval failed", e);
             Map<String, Object> err = new HashMap<>();
             err.put("status", "REJECTED");
             err.put("error", e.getMessage());

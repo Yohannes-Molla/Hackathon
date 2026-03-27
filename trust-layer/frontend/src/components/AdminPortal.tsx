@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '../api/client';
 import { Globe, Users, Activity, PlusCircle, ShieldAlert, BarChart3, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -46,7 +47,7 @@ const TABS: { key: AdminTab; label: string; icon: React.ReactNode }[] = [
 // Tenant creation form
 // ---------------------------------------------------------------------------
 
-const CreateTenantForm: React.FC<{ headers: Record<string, string>; onCreated: () => void }> = ({ headers, onCreated }) => {
+const CreateTenantForm: React.FC<{ onCreated: () => void }> = ({ onCreated }) => {
   const { pushToast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -62,7 +63,7 @@ const CreateTenantForm: React.FC<{ headers: Record<string, string>; onCreated: (
     }
     setSubmitting(true);
     try {
-      await axios.post('/api/tenants', { name, slug, domain: domain || undefined, primaryColor }, { headers });
+      await api.post('/api/tenants', { name, slug, domain: domain || undefined, primaryColor });
       pushToast('success', `Tenant "${name}" created`);
       setName(''); setSlug(''); setDomain(''); setPrimaryColor('#6366f1');
       setOpen(false);
@@ -137,37 +138,42 @@ export const AdminPortal: React.FC = () => {
   const [auditDateFrom, setAuditDateFrom] = useState('');
   const [auditDateTo, setAuditDateTo] = useState('');
 
-  const authHeaders = useMemo(
-    () => ({ Authorization: `Bearer ${user?.access_token}` }),
-    [user?.access_token],
-  );
+  const hasToken = !!user?.access_token;
 
   // ----- queries -----
   const tenantsQ = useQuery<Tenant[]>({
     queryKey: ['admin-tenants'],
-    queryFn: async () => (await axios.get('/api/admin/tenants', { headers: authHeaders })).data,
+    enabled: hasToken,
+    retry: 1,
+    queryFn: async () => (await api.get('/api/admin/tenants')).data,
   });
 
   const usersQ = useQuery<UserIdentity[]>({
     queryKey: ['admin-users', selectedTenant],
-    enabled: !!selectedTenant,
-    queryFn: async () => (await axios.get(`/api/admin/tenants/${selectedTenant}/users`, { headers: authHeaders })).data,
+    enabled: hasToken && !!selectedTenant,
+    retry: 1,
+    queryFn: async () => (await api.get(`/api/admin/tenants/${selectedTenant}/users`)).data,
   });
 
   const transactionsQ = useQuery<Tx[]>({
     queryKey: ['admin-user-tx', selectedUser],
-    enabled: !!selectedUser,
-    queryFn: async () => (await axios.get(`/api/admin/users/${selectedUser}/transactions`, { headers: authHeaders })).data,
+    enabled: hasToken && !!selectedUser,
+    retry: 1,
+    queryFn: async () => (await api.get(`/api/admin/users/${selectedUser}/transactions`)).data,
   });
 
   const riskQ = useQuery<RiskSummary>({
     queryKey: ['admin-risk-summary'],
-    queryFn: async () => (await axios.get('/api/admin/risk-summary', { headers: authHeaders })).data,
+    enabled: hasToken,
+    retry: 1,
+    queryFn: async () => (await api.get('/api/admin/risk-summary')).data,
   });
 
   const auditQ = useQuery<AuditLogEntry[]>({
     queryKey: ['admin-audit-logs'],
-    queryFn: async () => (await axios.get('/api/admin/audit-logs', { headers: authHeaders })).data,
+    enabled: hasToken,
+    retry: 1,
+    queryFn: async () => (await api.get('/api/admin/audit-logs')).data,
   });
 
   const tenants = tenantsQ.data ?? [];
@@ -197,7 +203,7 @@ export const AdminPortal: React.FC = () => {
   const updateUserStatus = async (userId: string, status: string) => {
     if (!window.confirm(`Set user status to "${status}"?`)) return;
     try {
-      await axios.patch(`/api/admin/users/${userId}/status`, { status }, { headers: authHeaders });
+      await api.patch(`/api/admin/users/${userId}/status`, { status });
       pushToast('success', `User status updated to ${status}`);
       queryClient.invalidateQueries({ queryKey: ['admin-users', selectedTenant] });
     } catch {
@@ -310,7 +316,7 @@ export const AdminPortal: React.FC = () => {
           <div className="flex items-center justify-between">
             <h2 className="font-black text-lg flex items-center gap-2"><ShieldAlert className="w-5 h-5" /> Tenants</h2>
           </div>
-          <CreateTenantForm headers={authHeaders} onCreated={() => tenantsQ.refetch()} />
+          <CreateTenantForm onCreated={() => tenantsQ.refetch()} />
 
           {tenantsQ.isLoading && <LoadingRow />}
           {tenantsQ.isError && <ErrorRow retry={() => tenantsQ.refetch()} />}

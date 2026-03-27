@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Check, Eye, EyeOff, History, LogOut, Plus, Settings, Shield, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '../context/ToastContext';
 
@@ -45,29 +45,20 @@ export const Dashboard: React.FC = () => {
         assuranceLevel: true,
     });
 
-    // Dynamic fetching
-    const userId = user?.profile?.sub || '00000000-0000-0000-0000-000000000000';
-
-    const authHeaders = useMemo(() => ({ Authorization: `Bearer ${user?.access_token}` }), [user?.access_token]);
+    const userId = user?.profile?.sub || '';
 
     const { data: cards, isLoading: cardsLoading, isError: cardsError, refetch: refetchCards } = useQuery<VirtualCard[]>({
         queryKey: ['cards', userId],
-        queryFn: async () => {
-            const res = await axios.get(`/api/vci/cards/${userId}`, {
-                headers: authHeaders
-            });
-            return res.data;
-        }
+        enabled: !!userId,
+        retry: 1,
+        queryFn: async () => (await api.get(`/api/vci/cards/${userId}`)).data,
     });
 
     const { data: transactions, isLoading: txLoading, isError: txError, refetch: refetchTx } = useQuery<Transaction[]>({
         queryKey: ['transactions', userId],
-        queryFn: async () => {
-            const res = await axios.get(`/api/tx/history/${userId}`, {
-                headers: authHeaders
-            });
-            return res.data;
-        }
+        enabled: !!userId,
+        retry: 1,
+        queryFn: async () => (await api.get(`/api/tx/history/${userId}`)).data,
     });
 
     const primaryCard = cards?.[0];
@@ -75,12 +66,8 @@ export const Dashboard: React.FC = () => {
         queryKey: ['cvv', primaryCard?.cardId],
         enabled: !!primaryCard?.cardId,
         refetchInterval: 60_000,
-        queryFn: async () => {
-            const res = await axios.get(`/api/vci/cards/${primaryCard?.cardId}/cvv`, {
-                headers: { Authorization: `Bearer ${user?.access_token}` }
-            });
-            return res.data;
-        }
+        retry: 1,
+        queryFn: async () => (await api.get(`/api/vci/cards/${primaryCard?.cardId}/cvv`)).data,
     });
 
     return (

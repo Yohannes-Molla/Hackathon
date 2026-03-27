@@ -70,9 +70,12 @@ export const RegistrationFlow: React.FC = () => {
                    onClick={() => setStep('QR_HANDOFF')}
                    className="w-full btn btn-primary gap-2"
                 >
-                    Start Registration <ArrowRight className="w-4 h-4" />
+                    Mobile QR handoff (optional) <ArrowRight className="w-4 h-4" />
                 </button>
 
+                <p className="text-center text-sm text-slate-600">
+                  <strong>Web demo:</strong> sign in and use <Link to="/identity" className="font-semibold text-primary hover:underline">Identity</Link> for eKYC upload, then <Link to="/cards" className="font-semibold text-primary hover:underline">Cards</Link> to provision.
+                </p>
                 <p className="text-center text-sm text-slate-600">
                   Already have an account?{' '}
                   <Link to="/signin" className="font-semibold text-primary hover:underline">
@@ -161,7 +164,7 @@ export const RegistrationFlow: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-3xl font-heading font-bold">Success!</h2>
-                    <p className="text-slate-600">Your federated identity is now active. You have been provisioned a new virtual card.</p>
+                    <p className="text-slate-600">Mobile flow complete. On web, finish eKYC and card steps from the Identity and Cards pages after sign-in.</p>
                 </div>
                 <button onClick={login} className="btn btn-primary w-full">Go to Dashboard</button>
             </motion.div>

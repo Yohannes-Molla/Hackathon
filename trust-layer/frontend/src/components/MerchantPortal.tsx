@@ -1,46 +1,56 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Store, QrCode, History, BarChart3 } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '../context/ToastContext';
+import api from '../api/client';
+import { DEMO_PAYER_KEYCLOAK_SUB } from '../utils/webCredential';
 
 type Tx = { txId: string; merchantId: string; status: string; amountMinor: number; currency: string; timestamp: string };
 
 export const MerchantPortal: React.FC = () => {
   const { user } = useAuth();
+  const { pushToast } = useToast();
   const [amountMinor, setAmountMinor] = useState(25000);
   const [nonce, setNonce] = useState<string | null>(null);
+  const [payerUserId, setPayerUserId] = useState(DEMO_PAYER_KEYCLOAK_SUB);
 
-  const authHeaders = useMemo(
-    () => ({ Authorization: `Bearer ${user?.access_token}` }),
-    [user?.access_token],
-  );
   const merchantId = user?.profile?.sub || 'merchant-demo';
 
   const { data: history = [], refetch } = useQuery<Tx[]>({
     queryKey: ['merchant-history', merchantId],
-    queryFn: async () => (await axios.get(`/api/tx/merchant/${merchantId}/history`, { headers: authHeaders })).data,
+    enabled: !!user?.access_token,
+    retry: 1,
+    queryFn: async () => (await api.get(`/api/tx/merchant/${merchantId}/history`)).data,
   });
 
   const { data: reconciliation } = useQuery<{ approvedAmountMinor: number; approvedCount: number; currency: string }>({
     queryKey: ['merchant-reconciliation', merchantId],
-    queryFn: async () => (await axios.get(`/api/tx/merchant/${merchantId}/reconciliation`, { headers: authHeaders })).data,
+    enabled: !!user?.access_token,
+    retry: 1,
+    queryFn: async () => (await api.get(`/api/tx/merchant/${merchantId}/reconciliation`)).data,
   });
 
   const initiatePayment = async () => {
-    const response = await axios.post(
-      '/api/tx/initiate',
-      {
-        userId: merchantId,
+    if (!payerUserId.trim()) {
+      pushToast('error', 'Set payer Keycloak subject (customer)');
+      return;
+    }
+    try {
+      const response = await api.post('/api/tx/initiate', {
+        userId: payerUserId.trim(),
         merchantId,
         amountMinor,
         currency: 'ETB',
         description: 'Merchant initiated payment',
-      },
-      { headers: authHeaders },
-    );
-    setNonce(response.data.nonce ?? null);
-    refetch();
+      });
+      setNonce(response.data.nonce ?? null);
+      pushToast('success', 'Challenge created — customer can approve under Transactions.');
+      refetch();
+    } catch (e: unknown) {
+      const ax = e as { response?: { data?: { error?: string } } };
+      pushToast('error', ax.response?.data?.error ?? 'Initiate failed');
+    }
   };
 
   return (
@@ -66,6 +76,14 @@ export const MerchantPortal: React.FC = () => {
 
         <div className="glass-card p-5 rounded-xl border border-slate-100 lg:col-span-2">
           <div className="text-xs uppercase tracking-widest text-slate-400 font-black mb-3">Initiate Payment</div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Payer Keycloak subject (customer)</label>
+          <input
+            type="text"
+            className="border rounded-lg px-3 py-2 w-full max-w-xl text-sm font-mono mb-3"
+            value={payerUserId}
+            onChange={(e) => setPayerUserId(e.target.value)}
+            placeholder="Customer sub from Identity page"
+          />
           <div className="flex items-center gap-3">
             <input
               type="number"

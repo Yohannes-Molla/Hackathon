@@ -21,6 +21,8 @@ cd deploy
 docker compose up -d
 ```
 
+End-to-end checklist (after services are healthy): [docs/E2E-VALIDATION.md](docs/E2E-VALIDATION.md). Demo narration: [docs/demo-script.md](docs/demo-script.md).
+
 Primary endpoints:
 
 - Gateway: `http://localhost:8080`

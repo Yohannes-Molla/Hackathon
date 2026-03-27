@@ -1,8 +1,8 @@
 import React from 'react';
-import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import api from '../api/client';
 
 type SessionView = {
   id: string;
@@ -15,18 +15,23 @@ type SessionView = {
 export const SessionsPage: React.FC = () => {
   const { user } = useAuth();
   const { pushToast } = useToast();
-  const headers = { Authorization: `Bearer ${user?.access_token}` };
 
   const { data = [], isLoading, isError, refetch } = useQuery<SessionView[]>({
     queryKey: ['active-sessions'],
-    queryFn: async () => (await axios.get('/api/sessions/active', { headers })).data,
+    enabled: !!user?.access_token,
+    retry: 1,
+    queryFn: async () => (await api.get('/api/sessions/active')).data,
   });
 
   const revoke = async (id: string) => {
     if (!window.confirm('Revoke this session?')) return;
-    await axios.delete(`/api/sessions/${id}`, { headers });
-    pushToast('success', 'Session revoked');
-    refetch();
+    try {
+      await api.delete(`/api/sessions/${id}`);
+      pushToast('success', 'Session revoked');
+      refetch();
+    } catch {
+      pushToast('error', 'Could not revoke session');
+    }
   };
 
   return (

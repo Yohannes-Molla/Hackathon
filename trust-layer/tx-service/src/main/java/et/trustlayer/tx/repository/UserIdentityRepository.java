@@ -1,4 +1,4 @@
-package et.trustlayer.vci.repository;
+package et.trustlayer.tx.repository;
 
 import et.trustlayer.common.entity.UserIdentity;
 import org.springframework.data.jpa.repository.JpaRepository;

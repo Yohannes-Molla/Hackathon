@@ -22,9 +22,11 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     const fetchTenant = async () => {
-      // Determine tenant from subdomain or X-Tenant-ID
-      const host = window.location.host; // e.g., banka.trustlayer.et:3000
-      const slug = host.split('.')[0] || 'hub';
+      const hostname = window.location.hostname; // e.g., banka.trustlayer.et (no port)
+      const parts = hostname.split('.');
+      // Only treat the first segment as a slug when there is a real subdomain (3+ parts).
+      // For plain localhost or IP addresses, fall back to 'hub'.
+      const slug = parts.length >= 3 ? parts[0] : 'hub';
       let active: TenantBranding = {
         name: 'Trust Layer Hub',
         slug: 'hub',

@@ -51,14 +51,27 @@ public class VirtualCardService {
     @Value("${trustlayer.vault.token:root}")
     private String vaultToken;
 
+    private UserIdentity resolveUserIdentity(String userIdOrKeycloakSub) {
+        return userRepository.findByKeycloakSub(userIdOrKeycloakSub)
+                .or(() -> {
+                    try {
+                        return userRepository.findById(UUID.fromString(userIdOrKeycloakSub));
+                    } catch (IllegalArgumentException e) {
+                        return Optional.empty();
+                    }
+                })
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @Transactional
     public VirtualCardResponse provisionCard(ProvisionCardRequest request) {
         log.info("Provisioning virtual card for user {} and binding to key {}", request.getUserId(), request.getKeyId());
 
-        UserIdentity user = userRepository.findById(UUID.fromString(request.getUserId()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserIdentity user = resolveUserIdentity(request.getUserId());
 
-        if (!"EKYC_COMPLETE".equals(user.getOnboardingState()) && !"LIVE".equals(user.getOnboardingState())) {
+        if (!"EKYC_COMPLETE".equals(user.getOnboardingState())
+                && !"LIVE".equals(user.getOnboardingState())
+                && !"EKYC_PENDING_REVIEW".equals(user.getOnboardingState())) {
             throw new RuntimeException("User must complete eKYC before card provisioning");
         }
 
@@ -108,8 +121,9 @@ public class VirtualCardService {
     }
 
     @Transactional(readOnly = true)
-    public List<VirtualCardResponse> getUserCards(String userId) {
-        return virtualCardRepository.findByUserIdentityId(UUID.fromString(userId))
+    public List<VirtualCardResponse> getUserCards(String userIdOrKeycloakSub) {
+        UserIdentity user = resolveUserIdentity(userIdOrKeycloakSub);
+        return virtualCardRepository.findByUserIdentityId(user.getId())
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());

@@ -359,6 +359,7 @@
   ],
   "users": [
     {
+      "id": "d0000000-0000-4000-8000-000000000001",
       "username": "demo",
       "email": "demo@trustlayer.local",
       "enabled": true,
@@ -377,6 +378,7 @@
       ]
     },
     {
+      "id": "d0000000-0000-4000-8000-000000000002",
       "username": "admin",
       "email": "admin@trustlayer.local",
       "enabled": true,
@@ -395,6 +397,7 @@
       ]
     },
     {
+      "id": "d0000000-0000-4000-8000-000000000003",
       "username": "merchant",
       "email": "merchant@trustlayer.local",
       "enabled": true,

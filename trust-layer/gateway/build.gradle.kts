@@ -10,6 +10,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":common")) {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-security")
+    }
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 }

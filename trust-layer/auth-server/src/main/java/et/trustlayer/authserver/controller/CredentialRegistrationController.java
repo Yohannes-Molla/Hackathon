@@ -13,7 +13,9 @@ import et.trustlayer.common.entity.UserIdentity;
 import et.trustlayer.common.security.TenantContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.text.ParseException;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,9 +48,15 @@ public class CredentialRegistrationController {
 
             UserIdentity user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-                    
-            Tenant tenant = tenantRepository.findById(TenantContext.getTenantId())
-                           .orElseThrow(() -> new RuntimeException("Tenant not found"));
+
+            Tenant tenant = user.getTenant();
+            if (tenant == null && TenantContext.getTenantId() != null) {
+                tenant = tenantRepository.findById(TenantContext.getTenantId())
+                        .orElseThrow(() -> new RuntimeException("Tenant not found"));
+            }
+            if (tenant == null) {
+                throw new RuntimeException("Tenant not found for user");
+            }
 
             BiometricCredential credential = new BiometricCredential();
             credential.setKeyId(UUID.randomUUID().toString());
@@ -65,7 +73,7 @@ public class CredentialRegistrationController {
                     "BiometricCredential", credential.getKeyId(),
                     "{\"deviceId\":\"" + request.getDeviceId() + "\",\"credentialType\":\"SIGNING\"}");
             
-            return ResponseEntity.ok().body("{\"keyId\":\"" + credential.getKeyId() + "\"}");
+            return ResponseEntity.ok(Map.of("keyId", credential.getKeyId()));
         } catch (ParseException | com.nimbusds.jose.JOSEException e) {
             return ResponseEntity.badRequest().body("Invalid JWK format or operation");
         }

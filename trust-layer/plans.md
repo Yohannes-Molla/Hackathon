@@ -11,6 +11,7 @@ This file tracks the high-level plans for the Trust Layer hackathon prototype.
 - Business and deployment model: `docs/business-deployment-model.md`
 - Card transaction flow: `docs/card-transaction-flow.md`
 - Demo script: `docs/demo-script.md`
+- E2E validation checklist: `docs/E2E-VALIDATION.md`
 
 ## Next Iteration Plan
 
