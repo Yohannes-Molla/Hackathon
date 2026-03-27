@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${TL_DB_URL:jdbc:postgresql://postgres:5432/trust_layer}
+    username: ${TL_DB_USER:tl_user}
+    password: ${TL_DB_PASSWORD:tl_password}
+  redis:
+    host: ${TL_REDIS_HOST:redis}
+    port: ${TL_REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${TL_OIDC_ISSUER_URI:http://host.docker.internal:8180/realms/trust-layer}
+
+trustlayer:
+  ai:
+    base-url: ${TL_AI_BASE_URL:http://ai-service:5000}

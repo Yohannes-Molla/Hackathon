@@ -1,0 +1,217 @@
+{
+  "seed": 20260326,
+  "genuine_count": 10,
+  "spoof_count": 5,
+  "samples": [
+    {
+      "sample_id": "genuine_01",
+      "label": "genuine",
+      "skin_tone_group": "light",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_01.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_01/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_01/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_01/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_01.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_02",
+      "label": "genuine",
+      "skin_tone_group": "medium",
+      "lighting_group": "normal",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_02.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_02/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_02/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_02/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_02.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_03",
+      "label": "genuine",
+      "skin_tone_group": "dark",
+      "lighting_group": "dim",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_03.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_03/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_03/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_03/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_03.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_04",
+      "label": "genuine",
+      "skin_tone_group": "light",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_04.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_04/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_04/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_04/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_04.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_05",
+      "label": "genuine",
+      "skin_tone_group": "medium",
+      "lighting_group": "normal",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_05.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_05/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_05/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_05/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_05.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_06",
+      "label": "genuine",
+      "skin_tone_group": "dark",
+      "lighting_group": "dim",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_06.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_06/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_06/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_06/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_06.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_07",
+      "label": "genuine",
+      "skin_tone_group": "light",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_07.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_07/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_07/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_07/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_07.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_08",
+      "label": "genuine",
+      "skin_tone_group": "medium",
+      "lighting_group": "normal",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_08.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_08/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_08/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_08/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_08.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_09",
+      "label": "genuine",
+      "skin_tone_group": "dark",
+      "lighting_group": "dim",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_09.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_09/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_09/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_09/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_09.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "genuine_10",
+      "label": "genuine",
+      "skin_tone_group": "light",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/genuine_10.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_10/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_10/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/genuine_10/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/spoof/genuine_10.png",
+      "notes": "Synthetic identity sample used for OCR/liveness baseline."
+    },
+    {
+      "sample_id": "spoof_01",
+      "label": "spoof",
+      "skin_tone_group": "n/a",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_01.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_01/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_01/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_01/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_01.png",
+      "notes": "Synthetic spoof example approximating printed/screen replay artifacts."
+    },
+    {
+      "sample_id": "spoof_02",
+      "label": "spoof",
+      "skin_tone_group": "n/a",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_02.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_02/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_02/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_02/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_02.png",
+      "notes": "Synthetic spoof example approximating printed/screen replay artifacts."
+    },
+    {
+      "sample_id": "spoof_03",
+      "label": "spoof",
+      "skin_tone_group": "n/a",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_03.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_03/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_03/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_03/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_03.png",
+      "notes": "Synthetic spoof example approximating printed/screen replay artifacts."
+    },
+    {
+      "sample_id": "spoof_04",
+      "label": "spoof",
+      "skin_tone_group": "n/a",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_04.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_04/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_04/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_04/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_04.png",
+      "notes": "Synthetic spoof example approximating printed/screen replay artifacts."
+    },
+    {
+      "sample_id": "spoof_05",
+      "label": "spoof",
+      "skin_tone_group": "n/a",
+      "lighting_group": "bright",
+      "document_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_05.png",
+      "liveness_frame_paths": [
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_05/frame_1.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_05/frame_2.png",
+        "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/liveness/spoof_05/frame_3.png"
+      ],
+      "spoof_image_path": "/Users/work/Projects/Kifiya/Hackathon/trust-layer/ai-service/dataset/documents/spoof_05.png",
+      "notes": "Synthetic spoof example approximating printed/screen replay artifacts."
+    }
+  ]
+}

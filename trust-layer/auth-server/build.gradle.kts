@@ -16,7 +16,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-authorization-server")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
     // Database and Migrations
     implementation("org.flywaydb:flyway-core")
@@ -35,4 +35,5 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface TenantBranding {
   name: string;
@@ -24,36 +25,28 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Determine tenant from subdomain or X-Tenant-ID
       const host = window.location.host; // e.g., banka.trustlayer.et:3000
       const slug = host.split('.')[0] || 'hub';
-
-      // Mocked branding load, in production this is a GET /api/branding/slug
-      const mockBranding: Record<string, TenantBranding> = {
-        hub: {
-          name: 'Trust Layer Hub',
-          slug: 'hub',
-          primaryColor: '#6366f1',
-          primaryForeground: '#ffffff'
-        },
-        banka: {
-          name: 'Bank A (NBE)',
-          slug: 'banka',
-          primaryColor: '#059669', // Emerald 600
-          primaryForeground: '#ffffff'
-        },
-        bankb: {
-          name: 'Bank B (CBE)',
-          slug: 'bankb',
-          primaryColor: '#7c3aed', // Violet 600
-          primaryForeground: '#ffffff'
-        }
+      let active: TenantBranding = {
+        name: 'Trust Layer Hub',
+        slug: 'hub',
+        primaryColor: '#6366f1',
+        primaryForeground: '#ffffff',
       };
 
-      const found = mockBranding[slug] || mockBranding.hub;
-      setTenant(found);
+      try {
+        const response = await axios.get<TenantBranding>(`/api/tenants/${slug}/branding`);
+        active = {
+          ...response.data,
+          primaryForeground: response.data.primaryForeground || '#ffffff',
+        };
+        setTenant(active);
+      } catch {
+        setTenant(active);
+      }
       
       // Update CSS Variables dynamically
       const root = document.documentElement;
-      root.style.setProperty('--color-primary', found.primaryColor);
-      root.style.setProperty('--color-primary-foreground', found.primaryForeground);
+      root.style.setProperty('--color-primary', active.primaryColor);
+      root.style.setProperty('--color-primary-foreground', active.primaryForeground);
       
       setLoading(false);
     };
@@ -63,7 +56,7 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <TenantContext.Provider value={{ tenant, loading }}>
-      {!loading && children}
+      {children}
     </TenantContext.Provider>
   );
 };

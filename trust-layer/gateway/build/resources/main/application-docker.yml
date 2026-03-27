@@ -1,0 +1,36 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          "[/**]":
+            allowedOrigins:
+              - ${TL_WEB_ORIGIN:http://localhost:3000}
+              - ${TL_KEYCLOAK_ORIGIN:http://localhost:8180}
+              - ${TL_WEB_ORIGIN_ALT:http://127.0.0.1:3000}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-bridge-routes
+          uri: ${TL_AUTH_SERVER_URI:http://auth-server:9000}
+          predicates:
+            - Path=/api/credentials/**,/api/sessions/**,/api/identity/**,/api/admin/**,/api/tenants/**,/ws/**
+        - id: ekyc-routes
+          uri: ${TL_EKYC_SERVICE_URI:http://ekyc-service:9002}
+          predicates:
+            - Path=/api/ekyc/**
+        - id: tx-routes
+          uri: ${TL_TX_SERVICE_URI:http://tx-service:9003}
+          predicates:
+            - Path=/api/tx/**
+        - id: vci-routes
+          uri: ${TL_VCI_SERVICE_URI:http://vci-service:9004}
+          predicates:
+            - Path=/api/vci/**,/api/merchants/**

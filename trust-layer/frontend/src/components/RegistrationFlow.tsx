@@ -13,9 +13,11 @@ export const RegistrationFlow: React.FC = () => {
     const [sessionId] = useState(() => crypto.randomUUID());
     const [stompClient, setStompClient] = useState<Client | null>(null);
 
+    const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
+
     useEffect(() => {
         const client = new Client({
-            brokerURL: 'ws://localhost:9000/ws',
+            brokerURL: `${wsBaseUrl}/ws`,
             onConnect: () => {
                 client.subscribe(`/topic/session/${sessionId}`, (message) => {
                     const event = JSON.parse(message.body);

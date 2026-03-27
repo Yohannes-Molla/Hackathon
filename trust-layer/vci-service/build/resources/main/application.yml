@@ -1,6 +1,11 @@
 spring:
   application:
     name: vci-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/trust-layer
   datasource:
     url: jdbc:postgresql://localhost:5432/trust_layer
     username: tl_user
@@ -13,3 +18,14 @@ logging:
   level:
     root: INFO
     et.trustlayer: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+trustlayer:
+  vault:
+    base-url: http://localhost:8200
+    token: root

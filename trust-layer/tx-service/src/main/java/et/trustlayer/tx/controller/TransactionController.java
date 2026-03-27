@@ -66,4 +66,37 @@ public class TransactionController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/merchant/{merchantId}/history")
+    public ResponseEntity<List<et.trustlayer.tx.dto.TransactionRecordResponse>> getMerchantTransactionHistory(
+            @PathVariable String merchantId) {
+        try {
+            List<et.trustlayer.tx.dto.TransactionRecordResponse> history = transactionService.getMerchantTransactionHistory(merchantId);
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            log.error("Failed to get merchant transaction history", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/merchant/{merchantId}/reconciliation")
+    public ResponseEntity<Map<String, Object>> getMerchantReconciliation(
+            @PathVariable String merchantId) {
+        try {
+            List<et.trustlayer.tx.dto.TransactionRecordResponse> history = transactionService.getMerchantTransactionHistory(merchantId);
+            long approvedMinor = history.stream()
+                    .filter(tx -> "APPROVED".equalsIgnoreCase(tx.getStatus()))
+                    .mapToLong(tx -> tx.getAmountMinor() == null ? 0L : tx.getAmountMinor())
+                    .sum();
+            Map<String, Object> response = new HashMap<>();
+            response.put("merchantId", merchantId);
+            response.put("approvedCount", history.stream().filter(tx -> "APPROVED".equalsIgnoreCase(tx.getStatus())).count());
+            response.put("approvedAmountMinor", approvedMinor);
+            response.put("currency", history.stream().findFirst().map(et.trustlayer.tx.dto.TransactionRecordResponse::getCurrency).orElse("ETB"));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to get merchant reconciliation", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

@@ -10,10 +10,12 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.Base64URL;
 import et.trustlayer.common.entity.VirtualCard;
 import et.trustlayer.common.entity.BiometricCredential;
+import et.trustlayer.common.entity.Transaction;
 import et.trustlayer.tx.dto.SignedTransactionRequest;
 import et.trustlayer.tx.dto.InitiateTransactionRequest;
 import et.trustlayer.tx.dto.TransactionRecordResponse;
 import et.trustlayer.tx.repository.BiometricCredentialRepository;
+import et.trustlayer.tx.repository.TransactionRepository;
 import et.trustlayer.tx.repository.VirtualCardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.ZoneOffset;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.UUID;
@@ -36,6 +37,8 @@ public class TransactionService {
 
     private final BiometricCredentialRepository credentialRepository;
     private final VirtualCardRepository virtualCardRepository;
+    private final TransactionRepository transactionRepository;
+    private final FraudScoringService fraudScoringService;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private static final String NONCE_PREFIX = "tl:tx:nonce:";
@@ -95,14 +98,56 @@ public class TransactionService {
             if (cards.isEmpty() || !"ACTIVE".equals(cards.get(0).getStatus())) {
                 throw new RuntimeException("No active virtual card found for user");
             }
+            VirtualCard card = cards.get(0);
+
+            long amountMinor = parseAmountMinor(txData.get("amountMinor"));
+            String merchantId = (String) txData.getOrDefault("merchantId", txData.getOrDefault("merchant", "UNKNOWN"));
+            String currency = (String) txData.getOrDefault("currency", card.getCurrency());
+
+            FraudScoringService.FraudScoreResult fraud = fraudScoringService.score(
+                amountMinor,
+                card.getSingleTxLimitMinor(),
+                transactionRepository.findByUserIdentityIdOrderByCreatedAtDesc(credential.getUserIdentity().getId())
+            );
+
+            String status = "APPROVED";
+            if ("BLOCK".equals(fraud.decision())) {
+                status = "REJECTED";
+            } else if ("REVIEW".equals(fraud.decision())) {
+                status = "PENDING_REVIEW";
+            }
+
+            String txId = txData.get("txId") != null ? String.valueOf(txData.get("txId")) : UUID.randomUUID().toString();
+
+            Transaction saved = transactionRepository.save(
+                Transaction.builder()
+                    .tenant(credential.getUserIdentity().getTenant())
+                    .userIdentity(credential.getUserIdentity())
+                    .virtualCard(card)
+                    .merchantId(merchantId)
+                    .amountMinor(amountMinor)
+                    .currency(currency)
+                    .status(status)
+                    .nonce(nonceId)
+                    .signatureVerified(true)
+                    .riskScore(fraud.score())
+                    .fraudScore(fraud.score())
+                    .fraudFlags(String.join(",", fraud.flags()))
+                    .build()
+            );
             
             // 7. Success response
             Map<String, Object> result = new HashMap<>();
-            result.put("status", "APPROVED");
-            result.put("txId", txData.get("txId") != null ? txData.get("txId") : UUID.randomUUID().toString());
+            result.put("status", status);
+            result.put("txId", txId);
+            result.put("fraudScore", fraud.score());
+            result.put("fraudFlags", fraud.flags());
             
             // Publish to Web UI for dashboard syncing
-            redisTemplate.convertAndSend("tl:events:tx_approved", credential.getUserIdentity().getId().toString());
+            redisTemplate.convertAndSend(
+                "APPROVED".equals(status) ? "tl:events:tx_approved" : "tl:events:tx_rejected",
+                credential.getUserIdentity().getId().toString()
+            );
             
             return result;
             
@@ -142,26 +187,44 @@ public class TransactionService {
     }
 
     public List<TransactionRecordResponse> getTransactionHistory(String userId) {
-        // Return mock data for hackathon. In reality, query from an AuditLog or Transaction table.
-        List<TransactionRecordResponse> history = new ArrayList<>();
-        history.add(TransactionRecordResponse.builder()
-                .txId(UUID.randomUUID().toString())
-                .status("APPROVED")
-                .merchantId("Addis Supermarket")
-                .amountMinor(125000L) // 1250 ETB
-                .currency("ETB")
-                .timestamp(Instant.now().minus(Duration.ofDays(1)).toString())
-                .build());
-                
-        history.add(TransactionRecordResponse.builder()
-                .txId(UUID.randomUUID().toString())
-                .status("APPROVED")
-                .merchantId("Ethio Telecom")
-                .amountMinor(2500L) // 25 ETB
-                .currency("ETB")
-                .timestamp(Instant.now().minus(Duration.ofDays(2)).toString())
-                .build());
-                
-        return history;
+        return transactionRepository.findByUserIdentityIdOrderByCreatedAtDesc(UUID.fromString(userId))
+            .stream()
+            .map(tx -> TransactionRecordResponse.builder()
+                .txId(tx.getId().toString())
+                .status(tx.getStatus())
+                .merchantId(tx.getMerchantId())
+                .amountMinor(tx.getAmountMinor())
+                .currency(tx.getCurrency())
+                .timestamp(tx.getCreatedAt().toInstant(ZoneOffset.UTC).toString())
+                .build())
+            .toList();
+    }
+
+    public List<TransactionRecordResponse> getMerchantTransactionHistory(String merchantId) {
+        return transactionRepository.findByMerchantIdOrderByCreatedAtDesc(merchantId)
+            .stream()
+            .map(tx -> TransactionRecordResponse.builder()
+                .txId(tx.getId().toString())
+                .status(tx.getStatus())
+                .merchantId(tx.getMerchantId())
+                .amountMinor(tx.getAmountMinor())
+                .currency(tx.getCurrency())
+                .timestamp(tx.getCreatedAt().toInstant(ZoneOffset.UTC).toString())
+                .build())
+            .toList();
+    }
+
+    private long parseAmountMinor(Object amountObj) {
+        if (amountObj == null) {
+            return 0L;
+        }
+        if (amountObj instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            return Long.parseLong(String.valueOf(amountObj));
+        } catch (NumberFormatException ignored) {
+            return 0L;
+        }
     }
 }

@@ -55,11 +55,9 @@ public class CredentialRegistrationController {
             credential.setDeviceId(request.getDeviceId());
             credential.setAttestationCertificate(request.getAttestationCertChain());
             credential.setCredentialType("SIGNING");
-            // Workaround since entity listener sets tenantId generic way in full Spring setup, but this is explicit
-            // credential.setTenant(tenant); // In entity, need proper setters
-            
-            // To be precise with minimal entity setup we'd assign tenant & user
-            // credentialRepository.save(credential);
+            credential.setTenant(tenant);
+            credential.setUserIdentity(user);
+            credentialRepository.save(credential);
             
             return ResponseEntity.ok().body("{\"keyId\":\"" + credential.getKeyId() + "\"}");
         } catch (ParseException | com.nimbusds.jose.JOSEException e) {

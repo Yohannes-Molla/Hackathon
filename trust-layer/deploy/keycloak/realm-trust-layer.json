@@ -1,0 +1,242 @@
+{
+  "realm": "trust-layer",
+  "enabled": true,
+  "displayName": "Trust Layer",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Standard user role"
+      },
+      {
+        "name": "admin",
+        "description": "Administrator role"
+      },
+      {
+        "name": "merchant",
+        "description": "Merchant role"
+      }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "ekyc:verify",
+      "description": "Permission to verify identity data",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Verify your identity data"
+      },
+      "protocolMappers": []
+    },
+    {
+      "name": "vci:provision",
+      "description": "Permission to provision virtual cards",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Provision your virtual card"
+      },
+      "protocolMappers": []
+    },
+    {
+      "name": "tx:sign",
+      "description": "Permission to sign transactions",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Sign transactions on your behalf"
+      },
+      "protocolMappers": []
+    },
+    {
+      "name": "identity:read",
+      "description": "Permission to read identity claims",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Read your identity claims"
+      },
+      "protocolMappers": []
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "trust-layer-web",
+      "name": "Trust Layer Web",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "standardFlowEnabled": true,
+      "consentRequired": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "ekyc:verify",
+        "vci:provision",
+        "tx:sign",
+        "identity:read"
+      ]
+    },
+    {
+      "clientId": "trust-layer-android",
+      "name": "Trust Layer Android",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "trustlayer://callback",
+        "trustlayer://callback/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "standardFlowEnabled": true,
+      "consentRequired": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "trustlayer://callback*"
+      },
+      "defaultClientScopes": [
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "ekyc:verify",
+        "vci:provision",
+        "tx:sign",
+        "identity:read"
+      ]
+    },
+    {
+      "clientId": "trust-layer-admin",
+      "name": "Trust Layer Admin",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "trust-layer-admin-secret",
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "standardFlowEnabled": true,
+      "consentRequired": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "ekyc:verify",
+        "vci:provision",
+        "tx:sign",
+        "identity:read"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Demo",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "username": "merchant",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Merchant",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "merchant",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "merchant"
+      ]
+    }
+  ]
+}

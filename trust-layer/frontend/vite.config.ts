@@ -1,14 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const gatewayTarget = process.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api/vci': 'http://localhost:9004',
-      '/api/tx': 'http://localhost:9003',
-      '/api/ekyc': 'http://localhost:9002'
+      '/api/vci': gatewayTarget,
+      '/api/tx': gatewayTarget,
+      '/api/ekyc': gatewayTarget,
+      '/api/admin': gatewayTarget,
+      '/api/tenants': gatewayTarget,
+      '/api/sessions': gatewayTarget,
+      '/api/identity': gatewayTarget,
+      '/api/credentials': gatewayTarget,
+      '/oauth2': gatewayTarget,
+      '/ws': {
+        target: gatewayTarget.replace(/^http/, 'ws'),
+        ws: true
+      }
     }
   }
 })

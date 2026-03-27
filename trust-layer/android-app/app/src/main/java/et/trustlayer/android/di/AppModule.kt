@@ -22,7 +22,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "http://10.0.2.2:9000/" // Emulator → host localhost
+    private const val BASE_URL = "http://10.0.2.2:8080/" // Emulator → host gateway
 
     @Provides
     @Singleton

@@ -35,8 +35,13 @@ interface VirtualCard {
     dailyLimitMinor: number;
 }
 
-export const Dashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-    const { user } = useAuth();
+interface DynamicCvvResponse {
+    cardId: string;
+    cvv: string;
+}
+
+export const Dashboard: React.FC = () => {
+    const { user, logout } = useAuth();
     const [showPan, setShowPan] = useState(false);
 
     // Dynamic fetching
@@ -45,45 +50,35 @@ export const Dashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const { data: cards } = useQuery<VirtualCard[]>({
         queryKey: ['cards', userId],
         queryFn: async () => {
-            try {
-                const res = await axios.get(`/api/vci/cards/${userId}`, {
-                    headers: { Authorization: `Bearer ${user?.access_token}` }
-                });
-                return res.data;
-            } catch (err) {
-                console.warn('Backend unavailable, using fallback mock cards');
-                return [{
-                    cardId: 'mock-1',
-                    lastFour: '1102',
-                    cardNetwork: 'VISA',
-                    status: 'ACTIVE',
-                    currency: 'ETB',
-                    dailyLimitMinor: 500000
-                }];
-            }
+            const res = await axios.get(`/api/vci/cards/${userId}`, {
+                headers: { Authorization: `Bearer ${user?.access_token}` }
+            });
+            return res.data;
         }
     });
 
     const { data: transactions } = useQuery<Transaction[]>({
         queryKey: ['transactions', userId],
         queryFn: async () => {
-            try {
-                const res = await axios.get(`/api/tx/history/${userId}`, {
-                    headers: { Authorization: `Bearer ${user?.access_token}` }
-                });
-                return res.data;
-            } catch (err) {
-                console.warn('Backend unavailable, using fallback mock tx history');
-                return [
-                    { txId: '1', type: 'DEBIT', merchantId: 'Addis Pharmacy', amountMinor: 120050, status: 'APPROVED', timestamp: '2026-03-26T10:30:00Z' },
-                    { txId: '2', type: 'CREDIT', merchantId: 'Top-up Transfer', amountMinor: 500000, status: 'COMPLETED', timestamp: '2026-03-25T15:45:00Z' },
-                    { txId: '3', type: 'DEBIT', merchantId: 'Netflix Subscription', amountMinor: 45025, status: 'APPROVED', timestamp: '2026-03-24T09:12:00Z' },
-                ] as Transaction[];
-            }
+            const res = await axios.get(`/api/tx/history/${userId}`, {
+                headers: { Authorization: `Bearer ${user?.access_token}` }
+            });
+            return res.data;
         }
     });
 
     const primaryCard = cards?.[0];
+    const { data: cvv } = useQuery<DynamicCvvResponse>({
+        queryKey: ['cvv', primaryCard?.cardId],
+        enabled: !!primaryCard?.cardId,
+        refetchInterval: 60_000,
+        queryFn: async () => {
+            const res = await axios.get(`/api/vci/cards/${primaryCard?.cardId}/cvv`, {
+                headers: { Authorization: `Bearer ${user?.access_token}` }
+            });
+            return res.data;
+        }
+    });
 
     return (
         <div className="max-w-6xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -136,7 +131,7 @@ export const Dashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                                 </div>
                                 <div>
                                    <div className="text-[10px] opacity-60">CVV</div>
-                                   <div>{showPan ? '441' : '•••'}</div>
+                                   <div>{showPan ? (cvv?.cvv || '•••') : '•••'}</div>
                                 </div>
                                 {primaryCard && (
                                    <div>
@@ -243,7 +238,7 @@ export const Dashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                        Settings
                    </button>
                    <button 
-                      onClick={onLogout}
+                      onClick={() => logout()}
                       className="btn text-red-600 bg-red-50 hover:bg-red-100 transition-colors w-full gap-3"
                    >
                        <LogOut className="w-5 h-5" />

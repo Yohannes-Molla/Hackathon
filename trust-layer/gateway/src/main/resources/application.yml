@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          "[/**]":
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:8180"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-bridge-routes
+          uri: http://localhost:9000
+          predicates:
+            - Path=/api/credentials/**,/api/sessions/**,/api/identity/**,/api/admin/**,/api/tenants/**,/ws/**
+        - id: ekyc-routes
+          uri: http://localhost:9002
+          predicates:
+            - Path=/api/ekyc/**
+        - id: tx-routes
+          uri: http://localhost:9003
+          predicates:
+            - Path=/api/tx/**
+        - id: vci-routes
+          uri: http://localhost:9004
+          predicates:
+            - Path=/api/vci/**,/api/merchants/**
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always

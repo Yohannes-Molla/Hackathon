@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: ${TL_DB_URL:jdbc:postgresql://postgres:5432/trust_layer}
+    username: ${TL_DB_USER:tl_user}
+    password: ${TL_DB_PASSWORD:tl_password}
+  redis:
+    host: ${TL_REDIS_HOST:redis}
+    port: ${TL_REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${TL_OIDC_ISSUER_URI:http://host.docker.internal:8180/realms/trust-layer}
+
+trustlayer:
+  keycloak:
+    base-url: ${TL_KEYCLOAK_BASE_URL:http://host.docker.internal:8180}
+    realm: ${TL_KEYCLOAK_REALM:trust-layer}
+    admin-client-id: ${TL_KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
+    admin-client-secret: ${TL_KEYCLOAK_ADMIN_CLIENT_SECRET:}
+    admin-username: ${TL_KEYCLOAK_ADMIN_USERNAME:admin}
+    admin-password: ${TL_KEYCLOAK_ADMIN_PASSWORD:admin}
+    admin-realm: ${TL_KEYCLOAK_ADMIN_REALM:master}

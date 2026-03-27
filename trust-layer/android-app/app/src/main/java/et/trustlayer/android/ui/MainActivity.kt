@@ -1,6 +1,9 @@
 package et.trustlayer.android.ui
 
 import android.os.Bundle
+import android.net.Uri
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -16,18 +19,63 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import et.trustlayer.android.crypto.TrustLayerKeyManager
+import et.trustlayer.android.auth.OidcFlowManager
+import et.trustlayer.android.tx.TransactionSigner
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var keyManager: TrustLayerKeyManager
+    @Inject lateinit var transactionSigner: TransactionSigner
+    @Inject lateinit var oidcFlowManager: OidcFlowManager
+
+    private var startRouteOverride: String? = null
+
+    companion object {
+        private const val DEMO_USER_ID = "00000000-0000-0000-0000-000000000001"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        maybeHandleOidcCallback(intent?.data)
+        val txId = intent?.getStringExtra("tx_id")
+        val amount = intent?.getStringExtra("amount")
+        val merchant = intent?.getStringExtra("merchant")
+        val currency = intent?.getStringExtra("currency")
+        val startRoute = if (intent?.action == "APPROVE_TX" && txId != null && amount != null && merchant != null && currency != null) {
+            "approve/$txId/$amount/$merchant/$currency"
+        } else if (startRouteOverride != null) {
+            startRouteOverride!!
+        } else {
+            "scan"
+        }
         setContent {
             TrustLayerTheme {
-                TrustLayerNavHost()
+                TrustLayerNavHost(
+                    startDestination = startRoute,
+                    transactionSigner = transactionSigner,
+                    activity = this
+                )
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        maybeHandleOidcCallback(intent.data)
+    }
+
+    private fun maybeHandleOidcCallback(uri: Uri?) {
+        if (uri?.scheme != "trustlayer" || uri.host != "callback") {
+            return
+        }
+        val authorizationCode = uri.getQueryParameter("code") ?: return
+        lifecycleScope.launch {
+            val exchanged = oidcFlowManager.exchangeCodeForTokens(DEMO_USER_ID, authorizationCode)
+            if (exchanged) {
+                startRouteOverride = "dashboard"
             }
         }
     }
@@ -52,16 +100,87 @@ fun TrustLayerTheme(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun TrustLayerNavHost() {
+fun TrustLayerNavHost(
+    startDestination: String = "scan",
+    transactionSigner: TransactionSigner,
+    activity: ComponentActivity
+) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "scan") {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("scan") { QrScanScreen(navController) }
         composable("ekyc/{sessionId}") { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             EkycScreen(sessionId, navController)
         }
         composable("dashboard") { DashboardScreen(navController) }
+        composable("approve/{txId}/{amount}/{merchant}/{currency}") { backStackEntry ->
+            val txId = backStackEntry.arguments?.getString("txId") ?: ""
+            val amount = backStackEntry.arguments?.getString("amount")?.toDoubleOrNull() ?: 0.0
+            val merchant = backStackEntry.arguments?.getString("merchant") ?: ""
+            val currency = backStackEntry.arguments?.getString("currency") ?: "ETB"
+            TransactionApprovalScreen(
+                txId = txId,
+                amount = amount,
+                merchant = merchant,
+                currency = currency,
+                navController = navController,
+                signer = transactionSigner,
+                activity = activity
+            )
+        }
+    }
+}
+
+@Composable
+fun TransactionApprovalScreen(
+    txId: String,
+    amount: Double,
+    merchant: String,
+    currency: String,
+    navController: androidx.navigation.NavController,
+    signer: TransactionSigner,
+    activity: ComponentActivity
+) {
+    var status by remember { mutableStateOf("Pending approval") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Approve Transaction", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+        Spacer(Modifier.height(16.dp))
+        Text("Merchant: $merchant")
+        Text("Amount: $currency $amount")
+        Text("Tx ID: $txId", fontSize = 12.sp)
+        Spacer(Modifier.height(20.dp))
+        Text(status, color = MaterialTheme.colorScheme.secondary)
+        Spacer(Modifier.height(20.dp))
+        Button(onClick = {
+            activity.lifecycleScope.launch {
+                val result = signer.signAndSubmit(
+                    activity = activity,
+                    userId = "00000000-0000-0000-0000-000000000001",
+                    tenantId = "11111111-1111-1111-1111-111111111111",
+                    payload = TransactionSigner.TransactionPayload(
+                        txId = txId,
+                        amount = amount,
+                        currency = currency,
+                        merchant = merchant
+                    )
+                )
+                status = if (result.success) "Approved: ${result.status}" else "Failed: ${result.error}"
+            }
+        }) {
+            Text("Approve with biometrics")
+        }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(onClick = { navController.navigate("dashboard") }) {
+            Text("Back to dashboard")
+        }
     }
 }
 

@@ -30,6 +30,9 @@ public class UserIdentity {
     @Column(name = "external_sub", nullable = false)
     private String externalSub;
 
+    @Column(name = "keycloak_sub")
+    private String keycloakSub;
+
     @Column(name = "given_name", nullable = false)
     private String givenName;
 
@@ -48,6 +51,9 @@ public class UserIdentity {
 
     @Column(name = "ekyc_verification_id")
     private String ekycVerificationId;
+
+    @Column(name = "risk_score")
+    private Integer riskScore;
 
     @Column(name = "trust_framework", nullable = false)
     private String trustFramework;

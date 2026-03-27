@@ -105,7 +105,7 @@ class TransactionSigner @Inject constructor(
             val dpopProof = dpopGenerator.generateProof(
                 userId = userId,
                 htm = "POST",
-                htu = "http://10.0.2.2:9000/api/tx/submit",
+                htu = "http://10.0.2.2:8080/api/tx/submit",
                 ath = dpopGenerator.computeAccessTokenHash(accessToken)
             )
 

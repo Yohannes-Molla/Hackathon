@@ -66,7 +66,7 @@ class OidcFlowManager @Inject constructor(
             val dpopProof = dpopGenerator.generateProof(
                 userId = userId,
                 htm = "POST",
-                htu = "http://10.0.2.2:9000/oauth2/par"
+                htu = "http://10.0.2.2:8080/oauth2/par"
             )
 
             val response = api.pushedAuthorizationRequest(
@@ -99,7 +99,7 @@ class OidcFlowManager @Inject constructor(
             val dpopProof = dpopGenerator.generateProof(
                 userId = userId,
                 htm = "POST",
-                htu = "http://10.0.2.2:9000/oauth2/token"
+                htu = "http://10.0.2.2:8080/oauth2/token"
             )
 
             val response = api.exchangeToken(
@@ -141,7 +141,7 @@ class OidcFlowManager @Inject constructor(
             val dpopProof = dpopGenerator.generateProof(
                 userId = userId,
                 htm = "POST",
-                htu = "http://10.0.2.2:9000/api/credentials/register",
+                htu = "http://10.0.2.2:8080/api/credentials/register",
                 ath = dpopGenerator.computeAccessTokenHash(accessToken)
             )
 

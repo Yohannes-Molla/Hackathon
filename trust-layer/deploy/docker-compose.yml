@@ -1,15 +1,32 @@
-version: '3.8'
-
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: tl-keycloak
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "${TL_KEYCLOAK_PORT:-8180}:8080"
+    environment:
+      KEYCLOAK_ADMIN: ${TL_KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${TL_KEYCLOAK_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./keycloak/realm-trust-layer.json:/opt/keycloak/data/import/realm-trust-layer.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   postgres:
     image: postgres:16-alpine
     container_name: tl-postgres
     ports:
-      - "5432:5432"
+      - "${TL_POSTGRES_PORT:-5433}:5432"
     environment:
-      POSTGRES_DB: trust_layer
-      POSTGRES_USER: tl_user
-      POSTGRES_PASSWORD: tl_password
+      POSTGRES_DB: ${TL_DB_NAME:-trust_layer}
+      POSTGRES_USER: ${TL_DB_USER:-tl_user}
+      POSTGRES_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +39,7 @@ services:
     image: redis:7-alpine
     container_name: tl-redis
     ports:
-      - "6379:6379"
+      - "${TL_REDIS_PORT:-6379}:6379"
     command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redisdata:/data
@@ -36,7 +53,7 @@ services:
     image: hashicorp/vault:1.15
     container_name: tl-vault
     ports:
-      - "8200:8200"
+      - "${TL_VAULT_PORT:-8200}:8200"
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: root
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
@@ -52,10 +69,151 @@ services:
     image: axllent/mailpit
     container_name: tl-mailpit
     ports:
-      - "8025:8025" # Web UI
-      - "1025:1025" # SMTP
+      - "${TL_MAILPIT_UI_PORT:-8025}:8025" # Web UI
+      - "${TL_MAILPIT_SMTP_PORT:-1025}:1025" # SMTP
     environment:
       MP_DEBUG: "false"
+
+  auth-server:
+    build:
+      context: ..
+      dockerfile: auth-server/Dockerfile
+    container_name: tl-auth-server
+    ports:
+      - "${TL_AUTH_SERVER_PORT:-9000}:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
+      TL_DB_USER: ${TL_DB_USER:-tl_user}
+      TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
+      TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_KEYCLOAK_BASE_URL: ${TL_KEYCLOAK_BASE_URL:-http://host.docker.internal:8180}
+      TL_KEYCLOAK_REALM: ${TL_KEYCLOAK_REALM:-trust-layer}
+      TL_KEYCLOAK_ADMIN_CLIENT_ID: ${TL_KEYCLOAK_ADMIN_CLIENT_ID:-admin-cli}
+      TL_KEYCLOAK_ADMIN_CLIENT_SECRET: ${TL_KEYCLOAK_ADMIN_CLIENT_SECRET:-}
+      TL_KEYCLOAK_ADMIN_USERNAME: ${TL_KEYCLOAK_ADMIN_USERNAME:-admin}
+      TL_KEYCLOAK_ADMIN_PASSWORD: ${TL_KEYCLOAK_ADMIN_PASSWORD:-admin}
+      TL_KEYCLOAK_ADMIN_REALM: ${TL_KEYCLOAK_ADMIN_REALM:-master}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  ekyc-service:
+    build:
+      context: ..
+      dockerfile: ekyc-service/Dockerfile
+    container_name: tl-ekyc-service
+    ports:
+      - "${TL_EKYC_SERVICE_PORT:-9002}:9002"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
+      TL_DB_USER: ${TL_DB_USER:-tl_user}
+      TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
+      TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+      TL_AI_BASE_URL: ${TL_AI_BASE_URL:-http://ai-service:5000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  tx-service:
+    build:
+      context: ..
+      dockerfile: tx-service/Dockerfile
+    container_name: tl-tx-service
+    ports:
+      - "${TL_TX_SERVICE_PORT:-9003}:9003"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
+      TL_DB_USER: ${TL_DB_USER:-tl_user}
+      TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
+      TL_REDIS_HOST: ${TL_REDIS_HOST:-redis}
+      TL_REDIS_PORT: ${TL_REDIS_PORT:-6379}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  vci-service:
+    build:
+      context: ..
+      dockerfile: vci-service/Dockerfile
+    container_name: tl-vci-service
+    ports:
+      - "${TL_VCI_SERVICE_PORT:-9004}:9004"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TL_DB_URL: ${TL_DB_URL:-jdbc:postgresql://postgres:5432/trust_layer}
+      TL_DB_USER: ${TL_DB_USER:-tl_user}
+      TL_DB_PASSWORD: ${TL_DB_PASSWORD:-tl_password}
+      TL_OIDC_ISSUER_URI: ${TL_OIDC_ISSUER_URI:-http://host.docker.internal:8180/realms/trust-layer}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: gateway/Dockerfile
+    container_name: tl-gateway
+    ports:
+      - "${TL_GATEWAY_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TL_WEB_ORIGIN: ${TL_WEB_ORIGIN:-http://localhost:3000}
+      TL_WEB_ORIGIN_ALT: ${TL_WEB_ORIGIN_ALT:-http://127.0.0.1:3000}
+      TL_KEYCLOAK_ORIGIN: ${TL_KEYCLOAK_ORIGIN:-http://localhost:8180}
+      TL_AUTH_SERVER_URI: ${TL_AUTH_SERVER_URI:-http://auth-server:9000}
+      TL_EKYC_SERVICE_URI: ${TL_EKYC_SERVICE_URI:-http://ekyc-service:9002}
+      TL_TX_SERVICE_URI: ${TL_TX_SERVICE_URI:-http://tx-service:9003}
+      TL_VCI_SERVICE_URI: ${TL_VCI_SERVICE_URI:-http://vci-service:9004}
+    depends_on:
+      - auth-server
+      - ekyc-service
+      - tx-service
+      - vci-service
+
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Dockerfile
+    container_name: tl-ai-service
+    ports:
+      - "${TL_AI_SERVICE_PORT:-5000}:5000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: tl-frontend
+    ports:
+      - "${TL_FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - gateway
 
 volumes:
   pgdata:

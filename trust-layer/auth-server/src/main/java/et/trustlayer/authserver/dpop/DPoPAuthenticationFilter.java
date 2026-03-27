@@ -26,31 +26,31 @@ public class DPoPAuthenticationFilter extends OncePerRequestFilter {
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             String dpopHeader = request.getHeader("DPoP");
-            if (dpopHeader != null && !dpopHeader.isEmpty()) {
-                String method = request.getMethod();
-                String uri = request.getRequestURL().toString();
-                String accessToken = jwtAuth.getToken().getTokenValue();
+            if (dpopHeader == null || dpopHeader.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing DPoP header");
+                return;
+            }
 
-                DPoPValidationResult result = proofValidator.validate(dpopHeader, method, uri, accessToken);
-                if (!result.isValid()) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid DPoP proof: " + result.getError());
-                    return;
-                }
+            String method = request.getMethod();
+            String uri = request.getRequestURL().toString();
+            String accessToken = jwtAuth.getToken().getTokenValue();
 
-                // Verify cnf binding in the JWT
-                Object cnfClaim = jwtAuth.getToken().getClaims().get("cnf");
-                if (cnfClaim instanceof java.util.Map cnfMap) {
-                    if (!result.getJwkThumbprint().equals(cnfMap.get("jkt"))) {
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "DPoP Thumbprint mismatch");
-                        return;
-                    }
-                } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token missing 'cnf' claim for DPoP binding");
+            DPoPValidationResult result = proofValidator.validate(dpopHeader, method, uri, accessToken);
+            if (!result.isValid()) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid DPoP proof: " + result.getError());
+                return;
+            }
+
+            // Verify cnf binding in the JWT
+            Object cnfClaim = jwtAuth.getToken().getClaims().get("cnf");
+            if (cnfClaim instanceof java.util.Map cnfMap) {
+                if (!result.getJwkThumbprint().equals(cnfMap.get("jkt"))) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "DPoP Thumbprint mismatch");
                     return;
                 }
             } else {
-                // For endpoints that require DPoP (could check annotations or paths here), block if missing.
-                // Assuming all resources require DPoP if this filter is applied.
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token missing 'cnf' claim for DPoP binding");
+                return;
             }
         }
         filterChain.doFilter(request, response);
