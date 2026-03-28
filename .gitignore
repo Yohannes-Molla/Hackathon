@@ -1,0 +1,11 @@
+.claude/
+CLAUDE.md
+.idea/
+.node_modules
+
+
+# android app
+.gradle/
+.build/
+.idea/
+
