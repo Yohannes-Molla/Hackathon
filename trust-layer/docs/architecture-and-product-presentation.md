@@ -1,6 +1,6 @@
 # UniTrust — System Architecture & Product Overview
 
-*Presentation-oriented summary. Aligns with the implementation baseline in the Trust Layer plan (Phases 0–5, 7–9 complete; Android Phase 6 optional) and the detailed docs in this folder.*
+*Presentation-oriented summary. Aligns with the implementation baseline in the UniTrust plan (Phases 0–5, 7–9 complete; Android Phase 6 optional) and the detailed docs in this folder.*
 
 ---
 
@@ -224,7 +224,7 @@ Reference: [business-deployment-model.md](business-deployment-model.md), repo `R
 
 ## 10. Suggested slide outline (≈10–12 slides)
 
-1. Title — Trust Layer: identity + payments trust fabric  
+1. Title — UniTrust: identity + payments trust fabric  
 2. Problem — fragmented KYC, weak payment binding, multi-tenant needs  
 3. Solution overview — one gateway, Keycloak, domain microservices  
 4. Architecture diagram — section 4.1  
