@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { TenantProvider, useTenant } from './context/TenantContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { hasRealmRole } from './auth/keycloakRoles';
+import { getDefaultRouteForUser, hasRealmRole, isAdminOrMerchant } from './auth/keycloakRoles';
 import { RegistrationFlow } from './components/RegistrationFlow';
 import { Dashboard } from './components/Dashboard';
 import { AdminPortal } from './components/AdminPortal';
@@ -28,7 +28,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 const queryClient = new QueryClient();
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -39,10 +39,20 @@ const HomePage: React.FC = () => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
   return <RegistrationFlow />;
+};
+
+const UserOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+
+  return (
+    <ProtectedRoute>
+      {isAdminOrMerchant(user) ? <Navigate to={getDefaultRouteForUser(user)} replace /> : children}
+    </ProtectedRoute>
+  );
 };
 
 const MainLayout: React.FC = () => {
@@ -52,6 +62,7 @@ const MainLayout: React.FC = () => {
   const { unreadCount, markAllRead } = useNotifications();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const isPrivilegedAccount = isAdminOrMerchant(user);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -73,21 +84,25 @@ const MainLayout: React.FC = () => {
           <div className="flex items-center gap-4 md:gap-6">
             {isAuthenticated && (
               <div className="hidden md:flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-400">
-                <Link
-                  to="/dashboard"
-                  className={`transition-colors hover:text-primary ${location.pathname === '/dashboard' ? 'text-primary' : ''}`}
-                >
-                  Dashboard
-                </Link>
-                <Link to="/identity" className={`transition-colors hover:text-primary ${location.pathname === '/identity' ? 'text-primary' : ''}`}>
-                  Identity
-                </Link>
-                <Link to="/sessions" className={`transition-colors hover:text-primary ${location.pathname === '/sessions' ? 'text-primary' : ''}`}>
-                  Sessions
-                </Link>
-                <Link to="/cards" className={`transition-colors hover:text-primary ${location.pathname === '/cards' ? 'text-primary' : ''}`}>
-                  Cards
-                </Link>
+                {!isPrivilegedAccount && (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className={`transition-colors hover:text-primary ${location.pathname === '/dashboard' ? 'text-primary' : ''}`}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link to="/identity" className={`transition-colors hover:text-primary ${location.pathname === '/identity' ? 'text-primary' : ''}`}>
+                      Identity
+                    </Link>
+                    <Link to="/sessions" className={`transition-colors hover:text-primary ${location.pathname === '/sessions' ? 'text-primary' : ''}`}>
+                      Sessions
+                    </Link>
+                    <Link to="/cards" className={`transition-colors hover:text-primary ${location.pathname === '/cards' ? 'text-primary' : ''}`}>
+                      Cards
+                    </Link>
+                  </>
+                )}
                 {hasRealmRole(user, 'admin') && (
                   <Link
                     to="/admin"
@@ -159,12 +174,16 @@ const MainLayout: React.FC = () => {
       {mobileOpen && isAuthenticated && (
         <div className="md:hidden border-b bg-white px-4 py-3">
           <div className="flex flex-col gap-2 text-sm font-semibold">
-            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
-            <Link to="/identity" onClick={() => setMobileOpen(false)}>Identity</Link>
-            <Link to="/sessions" onClick={() => setMobileOpen(false)}>Sessions</Link>
-            <Link to="/cards" onClick={() => setMobileOpen(false)}>Cards</Link>
-            <Link to="/transactions" onClick={() => setMobileOpen(false)}>Transactions</Link>
-            <Link to="/settings" onClick={() => setMobileOpen(false)}>Settings</Link>
+            {!isPrivilegedAccount && (
+              <>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+                <Link to="/identity" onClick={() => setMobileOpen(false)}>Identity</Link>
+                <Link to="/sessions" onClick={() => setMobileOpen(false)}>Sessions</Link>
+                <Link to="/cards" onClick={() => setMobileOpen(false)}>Cards</Link>
+                <Link to="/transactions" onClick={() => setMobileOpen(false)}>Transactions</Link>
+                <Link to="/settings" onClick={() => setMobileOpen(false)}>Settings</Link>
+              </>
+            )}
             {hasRealmRole(user, 'admin') && <Link to="/admin" onClick={() => setMobileOpen(false)}>Admin</Link>}
             {hasRealmRole(user, 'merchant') && <Link to="/merchant" onClick={() => setMobileOpen(false)}>Merchant</Link>}
           </div>
@@ -192,17 +211,17 @@ function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <UserOnlyRoute>
               <Dashboard />
-            </ProtectedRoute>
+            </UserOnlyRoute>
           }
         />
-        <Route path="/identity" element={<ProtectedRoute><IdentityPage /></ProtectedRoute>} />
-        <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
-        <Route path="/cards" element={<ProtectedRoute><CardManagement /></ProtectedRoute>} />
-        <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-        <Route path="/transactions/:txId" element={<ProtectedRoute><TransactionDetailPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/identity" element={<UserOnlyRoute><IdentityPage /></UserOnlyRoute>} />
+        <Route path="/sessions" element={<UserOnlyRoute><SessionsPage /></UserOnlyRoute>} />
+        <Route path="/cards" element={<UserOnlyRoute><CardManagement /></UserOnlyRoute>} />
+        <Route path="/transactions" element={<UserOnlyRoute><TransactionsPage /></UserOnlyRoute>} />
+        <Route path="/transactions/:txId" element={<UserOnlyRoute><TransactionDetailPage /></UserOnlyRoute>} />
+        <Route path="/settings" element={<UserOnlyRoute><SettingsPage /></UserOnlyRoute>} />
         <Route
           path="/admin"
           element={

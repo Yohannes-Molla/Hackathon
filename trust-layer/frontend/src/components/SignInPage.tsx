@@ -2,15 +2,17 @@ import React from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { LogIn, Shield, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getDefaultRouteForUser } from '../auth/keycloakRoles';
 import { POST_LOGIN_REDIRECT_KEY } from '../auth/postLoginRedirect';
 
 export const SignInPage: React.FC = () => {
-  const { isAuthenticated, isLoading, login } = useAuth();
+  const { isAuthenticated, isLoading, login, user } = useAuth();
   const location = useLocation();
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
   const handleSignIn = () => {
-    const target = from && from !== '/signin' ? from : '/dashboard';
+    const fallback = getDefaultRouteForUser(user);
+    const target = from && from !== '/signin' ? from : fallback;
     sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, target);
     login();
   };
@@ -24,7 +26,7 @@ export const SignInPage: React.FC = () => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
   return (

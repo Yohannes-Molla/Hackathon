@@ -20,3 +20,4 @@
 
 - Merchant history: `/api/tx/merchant/{merchantId}/history`
 - Merchant summary: `/api/tx/merchant/{merchantId}/reconciliation`
+

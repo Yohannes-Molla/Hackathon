@@ -31,6 +31,10 @@ const settings: UserManagerSettings = {
   // Route token/userinfo calls through the Vite dev-server proxy so the
   // browser makes a same-origin fetch and CORS is not required.
   metadataSeed: {
+    // Same-origin + Vite/nginx proxy to Keycloak (avoids bad discovery URLs if KC is misconfigured)
+    authorization_endpoint: `${window.location.origin}${realmPath}/auth`,
+    end_session_endpoint: `${window.location.origin}${realmPath}/logout`,
+    jwks_uri: `${window.location.origin}${realmPath}/certs`,
     token_endpoint: `${window.location.origin}${realmPath}/token`,
     userinfo_endpoint: `${window.location.origin}${realmPath}/userinfo`,
     revocation_endpoint: `${window.location.origin}${realmPath}/revoke`,

@@ -36,3 +36,13 @@ export function getRealmRoles(user: User | null): string[] {
 export function hasRealmRole(user: User | null, role: string): boolean {
   return getRealmRoles(user).includes(role);
 }
+
+export function isAdminOrMerchant(user: User | null): boolean {
+  return hasRealmRole(user, 'admin') || hasRealmRole(user, 'merchant');
+}
+
+export function getDefaultRouteForUser(user: User | null): string {
+  if (hasRealmRole(user, 'admin')) return '/admin';
+  if (hasRealmRole(user, 'merchant')) return '/merchant';
+  return '/dashboard';
+}

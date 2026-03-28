@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="et.trustlayer.tx.service.FraudScoringServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-03-27T08:32:56.886Z" hostname="Yohanness-MacBook-Air-2.local" time="0.081">
+<testsuite name="et.trustlayer.tx.service.FraudScoringServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-03-27T15:44:08.248Z" hostname="Yohanness-MacBook-Air-2.local" time="0.141">
   <properties/>
-  <testcase name="addsVelocityFlagWhenManyRecentTransactions()" classname="et.trustlayer.tx.service.FraudScoringServiceTest" time="0.062"/>
-  <testcase name="blocksWhenAmountExceedsSingleTxLimit()" classname="et.trustlayer.tx.service.FraudScoringServiceTest" time="0.005"/>
+  <testcase name="addsVelocityFlagWhenManyRecentTransactions()" classname="et.trustlayer.tx.service.FraudScoringServiceTest" time="0.099"/>
+  <testcase name="blocksWhenAmountExceedsSingleTxLimit()" classname="et.trustlayer.tx.service.FraudScoringServiceTest" time="0.008"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -26,3 +26,4 @@ Keycloak is the OIDC authority for login, consent, sessions, and token issuance.
 
 - User session list and revocation exposed by `auth-server` session endpoints
 - Keycloak remains source of truth for browser/mobile sessions
+

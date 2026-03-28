@@ -1,4 +1,4 @@
-# Trust Layer — System Architecture & Product Overview
+# UniTrust — System Architecture & Product Overview
 
 *Presentation-oriented summary. Aligns with the implementation baseline in the Trust Layer plan (Phases 0–5, 7–9 complete; Android Phase 6 optional) and the detailed docs in this folder.*
 
@@ -6,7 +6,7 @@
 
 ## 1. Executive summary (one slide)
 
-**Trust Layer** is a multi-tenant platform that combines **OIDC identity (Keycloak)**, **AI-assisted eKYC**, **virtual card lifecycle (VCI)**, and **signed payment challenges** behind a single **API gateway**. It targets banks, fintechs, acquirers, and inclusion programs that need portable identity, biometric-aware authorization patterns, and clear auditability.
+**UniTrust** is a multi-tenant platform that combines **OIDC identity (Keycloak)**, **AI-assisted eKYC**, **virtual card lifecycle (VCI)**, and **signed payment challenges** behind a single **API gateway**. It targets banks, fintechs, acquirers, and inclusion programs that need portable identity, biometric-aware authorization patterns, and clear auditability.
 
 **Primary demo surface today:** three **web portals** (user, admin, merchant) plus containerized backend services. **Android** remains a documented extension path, not required for the core hackathon narrative.
 
@@ -27,7 +27,7 @@
 | Capability | Outcome |
 |------------|---------|
 | SSO & consent | Keycloak-backed OIDC; sessions and consent aligned with enterprise IdP practice |
-| eKYC + risk | Document-oriented verification with AI/heuristic scoring; persisted risk for ops |
+| eKYC + risk | Document-oriented verification with AI scoring; persisted risk for ops |
 | Virtual cards | Provisioning, limits, freeze/unfreeze; PAN protection via Vault Transit (with fallback path) |
 | Dynamic CVV | Time-based rotating CVV for demo of credential agility |
 | Payments | Merchant-initiated challenges; user approval; fraud scoring; persisted history |
@@ -41,12 +41,6 @@ From [business-deployment-model.md](business-deployment-model.md):
 - Fintech lenders  
 - Merchant acquirers and payment facilitators  
 - Government-backed inclusion programs  
-
-### 2.4 Monetization direction (conceptual)
-
-- Per-tenant platform fee  
-- Per-verification / per-transaction infrastructure fee  
-- Optional premium modules (risk analytics, compliance exports)  
 
 ---
 
@@ -200,7 +194,7 @@ Narrative steps: [card-transaction-flow.md](card-transaction-flow.md).
 
 ---
 
-## 7. AI / eKYC — how to describe it honestly
+## 7. AI / eKYC
 
 - The **ai-service** implements **document OCR confidence**, **liveness heuristics**, **anti-spoof proxies**, and a **weighted risk score** — documented as **heuristics**, not a production-grade deep model.  
 - **Evaluation** is reproducible via `ai-service` scripts and a synthetic dataset; current baseline metrics in [ai-model-documentation.md](ai-model-documentation.md) show the stack is useful for **architecture and integration demos** while **threshold calibration** remains a pre-production task.  

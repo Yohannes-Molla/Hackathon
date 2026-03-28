@@ -10,7 +10,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${TL_OIDC_ISSUER_URI:http://host.docker.internal:8180/realms/trust-layer}
+          jwk-set-uri: ${TL_OIDC_JWK_SET_URI:http://host.docker.internal:8180/realms/trust-layer/protocol/openid-connect/certs}
+          issuer-uri: ${TL_OIDC_ISSUER_URI:http://localhost:8180/realms/trust-layer}
 
 trustlayer:
   keycloak:

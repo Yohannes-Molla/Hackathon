@@ -1,6 +1,7 @@
 {
   "realm": "trust-layer",
   "enabled": true,
+  "sslRequired": "none",
   "displayName": "Trust Layer",
   "loginTheme": "trust-layer",
   "registrationAllowed": false,

@@ -21,3 +21,4 @@
 - KYC portability support via reusable verified claims
 - Auditability through `audit_logs`
 - Privacy-by-default via selective disclosure pattern
+

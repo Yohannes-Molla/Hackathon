@@ -10,6 +10,11 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${TL_KEYCLOAK_ADMIN_USERNAME:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${TL_KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # Use hostname-url (not hostname) for a full http:// URL — KC_HOSTNAME=http://... maps to
+      # --hostname and Keycloak prepends the scheme again → http://http//localhost (broken auth URL).
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_URL: "http://localhost:${TL_KEYCLOAK_PORT:-8180}"
+      KC_HOSTNAME_STRICT: "false"
     volumes:
       - ./keycloak/realm-trust-layer.json:/opt/keycloak/data/import/realm-trust-layer.json:ro
       - ./keycloak/themes/trust-layer:/opt/keycloak/themes/trust-layer:ro

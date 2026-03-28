@@ -24,3 +24,4 @@
 
 - Avoid logging raw document images and raw token content.
 - Log IDs/statuses for observability without exposing PII.
+
