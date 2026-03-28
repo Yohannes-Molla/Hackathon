@@ -28,7 +28,7 @@ WHERE EXISTS (SELECT 1 FROM biometric_credential WHERE id = 'c0000000-0000-4000-
   AND NOT EXISTS (SELECT 1 FROM virtual_card WHERE id = 'f0000000-0000-4000-8000-000000000001');
 
 INSERT INTO transactions (id, tenant_id, user_identity_id, virtual_card_id, merchant_id, amount_minor, currency, status, nonce, signature_verified, risk_score, fraud_score, fraud_flags, version, created_at)
-SELECT 'c0000000-0000-4000-8000-000000000001'::uuid, '11111111-1111-1111-1111-111111111111'::uuid, 'd0000000-0000-4000-8000-000000000001'::uuid, 'f0000000-0000-4000-8000-000000000001'::uuid,
+SELECT 't0000000-0000-4000-8000-000000000001'::uuid, '11111111-1111-1111-1111-111111111111'::uuid, 'd0000000-0000-4000-8000-000000000001'::uuid, 'f0000000-0000-4000-8000-000000000001'::uuid,
        'd0000000-0000-4000-8000-000000000003', 25000, 'ETB', 'APPROVED', 'seed-nonce-demo-1', true, 10, 10, '', 0, now()
 WHERE EXISTS (SELECT 1 FROM virtual_card WHERE id = 'f0000000-0000-4000-8000-000000000001')
   AND NOT EXISTS (SELECT 1 FROM transactions WHERE nonce = 'seed-nonce-demo-1');
