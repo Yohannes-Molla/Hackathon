@@ -5,7 +5,11 @@ CLAUDE.md
 
 
 # android app
-.gradle/
-.build/
-.idea/
+**/build/
+**/.gradle/
+**/.build/
+**/.idea/
+**/out/
+**/local.properties
+**/*.hprof
 
